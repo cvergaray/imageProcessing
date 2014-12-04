@@ -18,11 +18,11 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 
 /**
- * CharacterExtractor.
- * A class dedicated to processing images and finding individual characters.
- * This is generally accomplished by using the vertical and horizontal 
- * projections, or histograms. That is to say, counts of how many pixels are 
- * dark within rows and columns of pixels.
+ * CharacterExtractor. A class dedicated to processing images and finding
+ * individual characters. This is generally accomplished by using the vertical
+ * and horizontal projections, or histograms. That is to say, counts of how many
+ * pixels are dark within rows and columns of pixels.
+ *
  * @author Chris Vergaray
  */
 public class CharacterExtractor
@@ -124,6 +124,10 @@ public class CharacterExtractor
             }
             characters.add(new ProcessedCharacter(image.getSubimage(left, 0, x - left, image.getHeight()), characterID, lineID));
 
+            int tempLeft = x;
+            int temp = x;
+            for (; temp < image.getWidth() && temp - x < x - left && projections[temp] == 0; temp++);
+            characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double)(temp - x) / (double) (x - left) > .5);
             characterID++;
             //x--;
          }
@@ -158,8 +162,13 @@ public class CharacterExtractor
          //If we couldn't learn the font, then Bail out!
          return;
       }
+      
+      currentLibrary = FontLibrary.LoadLibrary(font.getName());
 
-      int x = 3000;
+      if(currentLibrary != null)
+         return;
+      
+      int x = 7000;
       int y = 200;
 
       BufferedImage bufferedImage = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
@@ -209,28 +218,40 @@ public class CharacterExtractor
          }
       }
 
+      FontLibrary.SaveLibrary(currentLibrary);
+      
       Deskewer.writeImage("LearnedFont.png", bufferedImage);
 
    }
 
    /**
-    * Identify Characters.
-    * A public method that accepts an image and 
+    * Identify Characters. A public method that accepts an image and
+    *
     * @param pImageToProcess
-    * @return 
+    * @return
     */
    public static String identifyCharacters(BufferedImage pImageToProcess)
    {
+      double confidence = 0;
+      double count = 0;
       String identifiedString = "";
       List<List<ProcessedCharacter>> all = extractAll(pImageToProcess);
-      if(currentLibrary != null)
+      if (currentLibrary != null)
+      {
          identifiedString = currentLibrary.matchAll(all);
-      /* //This code is for debugging and allows confidences to be shown.
-      for(List<ProcessedCharacter> temp : all)
-         for(ProcessedCharacter current : temp)
-            System.out.println(current.value + " : " + current.confidence);
-      */
-      
+      }
+      //This code is for debugging and allows confidences to be shown.
+      for (List<ProcessedCharacter> temp : all)
+      {
+         for (ProcessedCharacter current : temp)
+         {
+            confidence += current.confidence;
+            count++;
+            //System.out.println(current.value + " : " + current.confidence);
+         }
+      }
+      int roundedConfidence = (int) ((1.0 - (confidence / count)) * 10000);
+      System.out.println("Total confidence : " + (double) roundedConfidence / 100 + "%");
       return identifiedString;
    }
 

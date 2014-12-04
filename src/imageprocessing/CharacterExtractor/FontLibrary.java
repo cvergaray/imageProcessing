@@ -5,15 +5,16 @@
  */
 package imageprocessing.CharacterExtractor;
 
+import java.io.*;
 import java.util.List;
 
 /**
- * Font Library Class.
- * Stores a collection of known characters. Character sets can be assigned by
- * providing a ttf file of a known font. The 
+ * Font Library Class. Stores a collection of known characters. Character sets
+ * can be assigned by providing a ttf file of a known font. The
+ *
  * @author Chris Vergaray
  */
-public class FontLibrary
+public class FontLibrary implements Serializable
 {
 
    private List<List<ProcessedCharacter>> characters;
@@ -61,13 +62,16 @@ public class FontLibrary
 
    public double compareHistograms(ProcessedCharacter input, ProcessedCharacter compared)
    {
+      //Double hResult =  input.compareHistogram(compared);
+      //Double zResult =  input.compareZonedHistogram(compared, 6);
+      //return hResult < zResult ? hResult : zResult;
       return input.compareHistogram(compared);
    }
 
    public ProcessedCharacter findClosestMatch(ProcessedCharacter input)
    {
       ProcessedCharacter lowestMatch = input;
-      double lowestFound = Double.MAX_VALUE;
+      double lowestFound = input.confidence;
 
       if (characters != null)
       {
@@ -84,10 +88,11 @@ public class FontLibrary
                }
             }
          }
+         //System.out.println("Selected: " + lowestMatch.value);
          input.confidence = lowestFound;
          input.value = lowestMatch.value;
       }
-      
+
       return input;
    }
 
@@ -101,10 +106,64 @@ public class FontLibrary
          {
             findClosestMatch(current);
             processed += current.value;
+            if (current.followedBySpace)
+            {
+               processed += " ";
+            }
          }
          processed += '\n';
       }
 
       return processed;
    }
+
+   public static Boolean SaveLibrary(FontLibrary libToSave)
+   {
+      try
+      {
+         // Catch errors in I/O if necessary.
+         // Open a file to write to, named SavedObj.sav.
+         FileOutputStream saveFile;
+         saveFile = new FileOutputStream(libToSave.fontName + ".sav");
+
+         // Create an ObjectOutputStream to put objects into load file.
+         ObjectOutputStream save = new ObjectOutputStream(saveFile);
+
+         save.writeObject(libToSave);
+
+         save.close(); // This also closes loadFile.
+
+      } catch (Exception e)
+      {
+         e.printStackTrace(); // If there was an error, print the info.
+      }
+      return true;
+   }
+   
+   public static FontLibrary LoadLibrary(String libName)
+   {
+      FontLibrary loadedLibrary = null;
+      try
+      {
+         // Catch errors in I/O if necessary.
+         // Open a file to write to, named SavedObj.sav.
+         FileInputStream loadFile;
+         loadFile = new FileInputStream(libName + ".sav");
+
+         // Create an ObjectOutputStream to put objects into load file.
+         ObjectInputStream load = new ObjectInputStream(loadFile);
+
+         loadedLibrary = (FontLibrary) load.readObject();
+
+         load.close(); // This also closes loadFile.
+
+      } catch (Exception e)
+      {
+         e.printStackTrace(); // If there was an error, print the info.
+         return null;
+      }
+      return loadedLibrary;
+   }
+   
+   
 }
