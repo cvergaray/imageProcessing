@@ -8,8 +8,10 @@ package imageprocessing.CharacterExtractor;
 import java.util.List;
 
 /**
- *
- * @author cave
+ * Font Library Class.
+ * Stores a collection of known characters. Character sets can be assigned by
+ * providing a ttf file of a known font. The 
+ * @author Chris Vergaray
  */
 public class FontLibrary
 {

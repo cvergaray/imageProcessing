@@ -28,7 +28,7 @@ public class ImageProcessing
 {
    // SimpleFileChooser fileChooser = new SimpleFileChooser();
 
-   static Deskewer DesQ = new Deskewer("skewedImages/bcnotdetected.jpg");
+   // static Deskewer DesQ = new Deskewer("skewedImages/bcnotdetected.jpg");
    // static Deskewer DesQ = new Deskewer("skewedImages/p16.jpg");
    // static Deskewer DesQ = new Deskewer("skewedImages/Sample25Degrees.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Sample355Degrees.png");
@@ -39,7 +39,7 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("skewedImages/skew.jpg");
    // static Deskewer DesQ = new Deskewer("skewedImages/pg38-39.gif");
    // static Deskewer DesQ = new Deskewer("ar3.jpg");
-   // static Deskewer DesQ = new Deskewer("learnedFont.png");
+    static Deskewer DesQ = new Deskewer("learnedFont.png");
 
    /**
     * @param args the command line arguments
@@ -59,7 +59,7 @@ public class ImageProcessing
 
       BufferedImage image = DesQ.getImage();
 
-      image = ImageRotator.rotateRad(image, angle);
+      //image = ImageRotator.rotateRad(image, angle);
 
       Deskewer.writeImage("MyRotated.png", image);
 
@@ -67,6 +67,7 @@ public class ImageProcessing
 
       Deskewer.writeImage("MyDespeckled.png", image);
 
+      /*
       List<List<ProcessedCharacter>> lines = CharacterExtractor.extractAll(image);
 
       for (List<ProcessedCharacter> currentLine : lines)
@@ -76,7 +77,7 @@ public class ImageProcessing
             //Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() + ".png", current.getImageSegment());
          }
       }
-
+*/
       CharacterExtractor.learnFont("Times New Roman.ttf", "I Pretend");
 
       System.out.println(CharacterExtractor.identifyCharacters(image));

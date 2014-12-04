@@ -18,8 +18,12 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 
 /**
- *
- * @author cave
+ * CharacterExtractor.
+ * A class dedicated to processing images and finding individual characters.
+ * This is generally accomplished by using the vertical and horizontal 
+ * projections, or histograms. That is to say, counts of how many pixels are 
+ * dark within rows and columns of pixels.
+ * @author Chris Vergaray
  */
 public class CharacterExtractor
 {
@@ -37,7 +41,6 @@ public class CharacterExtractor
       {
          for (int y = 0; y < image.getHeight(); y++)
          {
-
             projections[x] += (Deskewer.isDark(new Color(image.getRGB(x, y))) ? 1 : 0);
          }
       }
@@ -137,6 +140,7 @@ public class CharacterExtractor
    {
       Font font = null;// = Font.getFont("Times New Roman");
 
+      //If we have specified a font, then we can try to get that one and learn it
       if (FileName != "" && FontName != "")
       {
          try
@@ -151,6 +155,7 @@ public class CharacterExtractor
          }
       } else
       {
+         //If we couldn't learn the font, then Bail out!
          return;
       }
 
@@ -208,15 +213,24 @@ public class CharacterExtractor
 
    }
 
+   /**
+    * Identify Characters.
+    * A public method that accepts an image and 
+    * @param pImageToProcess
+    * @return 
+    */
    public static String identifyCharacters(BufferedImage pImageToProcess)
    {
       String identifiedString = "";
       List<List<ProcessedCharacter>> all = extractAll(pImageToProcess);
       if(currentLibrary != null)
          identifiedString = currentLibrary.matchAll(all);
+      /* //This code is for debugging and allows confidences to be shown.
       for(List<ProcessedCharacter> temp : all)
          for(ProcessedCharacter current : temp)
             System.out.println(current.value + " : " + current.confidence);
+      */
+      
       return identifiedString;
    }
 

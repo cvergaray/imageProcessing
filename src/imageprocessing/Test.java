@@ -24,6 +24,7 @@ public class Test extends JPanel {
       g.drawString("www.tutorialspoint.com", 20,100);
       return bufferedImage;
    }
+   
    public static void main(String[] args) {
       JFrame frame = new JFrame();
       frame.getContentPane().add(new Test());
