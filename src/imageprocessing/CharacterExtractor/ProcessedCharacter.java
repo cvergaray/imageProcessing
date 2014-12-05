@@ -227,6 +227,8 @@ public class ProcessedCharacter implements Serializable
       {
          differenceFactor += Math.abs(smallerHHistogram[i] - largerHHistogram[i]);
       }
+      double ar = input.getAspectRatio();
+      if(ar < 7.0)
       for (int i = 0; i < smallerVHistogram.length; i++)
       {
          differenceFactor += Math.abs(smallerVHistogram[i] - largerVHistogram[i]);

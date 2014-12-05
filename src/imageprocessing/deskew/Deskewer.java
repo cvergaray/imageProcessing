@@ -22,7 +22,6 @@ public class Deskewer
 {
 
    BufferedImage image;
-   File input;
    HoughCoordinates[][] HoughArray;
    HoughCoordinates[] top20;
 
@@ -58,36 +57,48 @@ public class Deskewer
       return image;
    }
 
-   public Deskewer(String Filename)
+   public Deskewer(String pFilename)
+   {
+      File input;
+
+      try
+      {
+         input = new File(pFilename);
+         image = ImageIO.read(input);
+         initWithImage(image);
+      } catch (IOException e)
+      {
+         System.out.println(e.getMessage() + "Failed to open file");
+         System.exit(-1);
+      }
+   }
+
+   public Deskewer(BufferedImage pImage)
+   {
+      initWithImage(pImage);
+   }
+   
+   public void initWithImage(BufferedImage pImage)
    {
       System.err.println("Initializing...");
 
       //Default threshold. This should work for clean pictures.
       threshold = 300;
 
-      try
-      {
-         input = new File(Filename);
-         image = ImageIO.read(input);
-         mWidth = image.getWidth();
-         mHeight = image.getHeight();
-         System.err.println("Done Initializing...");
+      image = pImage;
+      mWidth = image.getWidth();
+      mHeight = image.getHeight();
+      System.err.println("Done Initializing...");
 
-         // Calculate the maximum height the hough array needs to have 
-         mAccumHeight = (int) (Math.sqrt(2) * Math.max(mHeight, mWidth)) / 2;
-         // Double the height of the hough array to cope with negative r values 
-         mDoubleHeight = 2 * mAccumHeight;
-         mAccumulatorMatrix = new int[m_CountSteps][mDoubleHeight];
+      // Calculate the maximum height the hough array needs to have 
+      mAccumHeight = (int) (Math.sqrt(2) * Math.max(mHeight, mWidth)) / 2;
+      // Double the height of the hough array to cope with negative r values 
+      mDoubleHeight = 2 * mAccumHeight;
+      mAccumulatorMatrix = new int[m_CountSteps][mDoubleHeight];
 
-         // Find edge points and vote in array 
-         centerX = mWidth / 2;
-         centerY = mHeight / 2;
-
-      } catch (Exception e)
-      {
-         System.out.println(e.getMessage() + "Failed to open file");
-         System.exit(-1);
-      }
+      // Find edge points and vote in array 
+      centerX = mWidth / 2;
+      centerY = mHeight / 2;
 
       mSinCache = new double[m_CountSteps];
       mCosCache = new double[m_CountSteps];
@@ -131,7 +142,7 @@ public class Deskewer
          }
          File ouptut = new File("grayscale.gif");
          ImageIO.write(image, "gif", ouptut);
-      } catch (Exception e)
+      } catch (IOException e)
       {
          System.out.println(e.getMessage() + "Failed to write greyscale");
       }

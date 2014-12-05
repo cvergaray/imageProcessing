@@ -20,6 +20,8 @@ public class FontLibrary implements Serializable
    private List<List<ProcessedCharacter>> characters;
    private String fontName;
    private int countCharacters;
+   
+   static final long serialVersionUID = -687991492150864067L;
 
    public FontLibrary(List<List<ProcessedCharacter>> pCharacters,
            String pName)
@@ -62,9 +64,9 @@ public class FontLibrary implements Serializable
 
    public double compareHistograms(ProcessedCharacter input, ProcessedCharacter compared)
    {
-      //Double hResult =  input.compareHistogram(compared);
-      //Double zResult =  input.compareZonedHistogram(compared, 6);
-      //return hResult < zResult ? hResult : zResult;
+//      Double hResult =  input.compareHistogram(compared);
+//      Double zResult =  input.compareZonedHistogram(compared, 6);//input.getVHistogram().length);
+//      return hResult < zResult ? hResult : zResult;
       return input.compareHistogram(compared);
    }
 
@@ -156,6 +158,8 @@ public class FontLibrary implements Serializable
          loadedLibrary = (FontLibrary) load.readObject();
 
          load.close(); // This also closes loadFile.
+         
+         System.err.println("Loaded Font library " + loadedLibrary.fontName);
 
       } catch (Exception e)
       {

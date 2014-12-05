@@ -118,16 +118,31 @@ public class CharacterExtractor
          if (projections[x] > 0)
          {
             left = x;
-            while (x < image.getWidth() && projections[x] > 0)
+            while (x < image.getWidth() && x < projections.length && projections[x] > 0)
             {
+               if (projections[x] == 1 && x > 0)
+               {
+                  Boolean combined = false;
+
+                  for (int i = 0; i < image.getHeight(); i++)
+                  {
+                     
+                  }
+               }
                x++;
             }
-            characters.add(new ProcessedCharacter(image.getSubimage(left, 0, x - left, image.getHeight()), characterID, lineID));
+            if (x != left)
+            {
+               characters.add(new ProcessedCharacter(image.getSubimage(left, 0, x - left, image.getHeight()), characterID, lineID));
+            }
 
             int tempLeft = x;
             int temp = x;
-            for (; temp < image.getWidth() && temp - x < x - left && projections[temp] == 0; temp++);
-            characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double)(temp - x) / (double) (x - left) > .5);
+            for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
+            if (characters.size() > 0)
+            {
+               characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > .6);
+            }
             characterID++;
             //x--;
          }
@@ -162,12 +177,15 @@ public class CharacterExtractor
          //If we couldn't learn the font, then Bail out!
          return;
       }
-      
+
       currentLibrary = FontLibrary.LoadLibrary(font.getName());
 
-      if(currentLibrary != null)
+      if (currentLibrary != null)
+      {
+         System.err.println("FontLibrary Loaded: " + font.getName());
          return;
-      
+      }
+
       int x = 7000;
       int y = 200;
 
@@ -190,7 +208,7 @@ public class CharacterExtractor
       }
 
       g.drawString(test, 50, 50);
-      //g.drawString(test2, 50, 150);
+      g.drawString(test2, 50, 150);
 
       List<List<ProcessedCharacter>> all = extractAll(bufferedImage);
 
@@ -219,8 +237,10 @@ public class CharacterExtractor
       }
 
       FontLibrary.SaveLibrary(currentLibrary);
-      
+
       Deskewer.writeImage("LearnedFont.png", bufferedImage);
+
+      System.err.println("FontLibrary Generated: " + currentLibrary.name());
 
    }
 
@@ -248,6 +268,8 @@ public class CharacterExtractor
             confidence += current.confidence;
             count++;
             //System.out.println(current.value + " : " + current.confidence);
+            Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() + ".png", current.getImageSegment());
+
          }
       }
       int roundedConfidence = (int) ((1.0 - (confidence / count)) * 10000);

@@ -67,14 +67,19 @@ public class ImageProcessing
 
       Deskewer.writeImage("MyDespeckled.png", image);
 
-      /*
-      List<List<ProcessedCharacter>> lines = CharacterExtractor.extractAll(image);
+/*      
+      List<List<ProcessedCharacter>> lines = CharacterExtractor.extractAll(image);      
 
+      Deskewer temp;
+      
       for (List<ProcessedCharacter> currentLine : lines)
       {
          for (ProcessedCharacter current : currentLine)
          {
-            //Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() + ".png", current.getImageSegment());
+            temp = new Deskewer(current.getImageSegment());
+            temp.setThreshold(2);
+            angle = temp.GetHoughAngle();
+            Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() + "-" + angle + ".png", current.getImageSegment());
          }
       }
 */
@@ -84,13 +89,13 @@ public class ImageProcessing
 
       
       System.out.println(CharacterExtractor.identifyCharacters(image));
-/*      String expected = "!";
+      String expected = "!";
       for(int i = 35; i < 127; i++)
       {
          expected += (char) i;
       }
       System.out.println(expected);
-      */
+      
 //      CharacterExtractor.learnFont("Pretendo.ttf", "I Pretend");
    }
 
