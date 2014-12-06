@@ -6,6 +6,7 @@
 package imageprocessing.CharacterExtractor;
 
 import imageprocessing.deskew.Deskewer;
+import imageprocessing.despeckle.Despeckler;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -120,13 +121,23 @@ public class CharacterExtractor
             left = x;
             while (x < image.getWidth() && x < projections.length && projections[x] > 0)
             {
-               if (projections[x] == 1 && x > 0)
+               //Double twoPixel = 2.0 / (double) image.getHeight();
+               if (projections[x] <= 3 && x > 0 && x < image.getWidth() - 1)
                {
                   Boolean combined = false;
 
-                  for (int i = 0; i < image.getHeight(); i++)
+                  for (int i = 1; i < image.getHeight() - 1; i++)
                   {
-                     
+                     if (image.getRGB(x, i) == Color.BLACK.getRGB())
+                     {
+                        combined |= image.getRGB(x, i) == image.getRGB(x + 1, i - 1);
+                        combined |= image.getRGB(x, i) == image.getRGB(x + 1, i);
+                        combined |= image.getRGB(x, i) == image.getRGB(x + 1, i + 1);
+                     }
+                  }
+                  if (!combined)
+                  {
+                     break;
                   }
                }
                x++;
@@ -136,12 +147,16 @@ public class CharacterExtractor
                characters.add(new ProcessedCharacter(image.getSubimage(left, 0, x - left, image.getHeight()), characterID, lineID));
             }
 
-            int tempLeft = x;
+            //Look ahead to see if the next block of blank pixels are at least 
+            //half the width of the current character. If so, it's probably a 
+            //space
             int temp = x;
             for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
             if (characters.size() > 0)
             {
-               characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > .6);
+               characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > .15);
+               //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > (.5 * currentLibrary.typicalAR));
+
             }
             characterID++;
             //x--;
@@ -167,7 +182,7 @@ public class CharacterExtractor
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             font = Font.createFont(Font.TRUETYPE_FONT, new File(FileName)).deriveFont(36F);
             ge.registerFont(font);
-            System.out.println("Created font " + font.getName());
+            System.out.println("Loaded font " + font.getName() + "From TTF");
          } catch (Exception e)
          {
             e.printStackTrace();
@@ -182,7 +197,7 @@ public class CharacterExtractor
 
       if (currentLibrary != null)
       {
-         System.err.println("FontLibrary Loaded: " + font.getName());
+         System.err.println("FontLibrary Loaded from file: " + font.getName());
          return;
       }
 
@@ -208,12 +223,13 @@ public class CharacterExtractor
       }
 
       g.drawString(test, 50, 50);
-      g.drawString(test2, 50, 150);
+      //g.drawString(test2, 50, 150);
 
       List<List<ProcessedCharacter>> all = extractAll(bufferedImage);
 
       currentLibrary = new FontLibrary(all, font.getFontName());
       int i = 33;
+      double averageAR = 0;
       for (List<ProcessedCharacter> currentLine : all)
       {
          for (ProcessedCharacter current : currentLine)
@@ -233,14 +249,18 @@ public class CharacterExtractor
              */
             i++;
 
+            averageAR += current.getAspectRatio();
+
          }
       }
 
+      currentLibrary.typicalAR = averageAR / (double) (i - 34);
+
       FontLibrary.SaveLibrary(currentLibrary);
 
-      Deskewer.writeImage("LearnedFont.png", bufferedImage);
+      //Deskewer.writeImage("LearnedFont.png", bufferedImage);
 
-      System.err.println("FontLibrary Generated: " + currentLibrary.name());
+      System.err.println("FontLibrary Generated from TTF: " + currentLibrary.name());
 
    }
 

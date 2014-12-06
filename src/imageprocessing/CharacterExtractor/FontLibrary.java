@@ -20,6 +20,7 @@ public class FontLibrary implements Serializable
    private List<List<ProcessedCharacter>> characters;
    private String fontName;
    private int countCharacters;
+   public double typicalAR;
    
    static final long serialVersionUID = -687991492150864067L;
 

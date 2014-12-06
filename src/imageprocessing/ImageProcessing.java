@@ -40,6 +40,7 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("skewedImages/pg38-39.gif");
    // static Deskewer DesQ = new Deskewer("ar3.jpg");
    // static Deskewer DesQ = new Deskewer("learnedFont.png");
+   // static Deskewer DesQ = new Deskewer("character2-60.png");
 
    /**
     * @param args the command line arguments

@@ -48,6 +48,11 @@ public class Despeckler
               && Math.abs(c1.getGreen() - c2.getGreen()) <= (similarity * 255)
               && Math.abs(c1.getBlue() - c2.getBlue()) <= (similarity * 255));
    }
+   
+   public static boolean isSimilar(int c1, int c2, float similarity)
+   {
+      return isSimilar(new Color(c1), new Color (c2), similarity);
+   }
 
    public static Boolean isDark(Color c)
    {
