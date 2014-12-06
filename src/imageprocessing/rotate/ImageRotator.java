@@ -48,16 +48,13 @@ public class ImageRotator
 
       calcNewCanvasSize(pImage.getWidth(), pImage.getHeight(), pRad);
 
-      newX = pImage.getWidth();
-      newY = pImage.getHeight();
       
-      //BufferedImage newImage = new BufferedImage(pImage.getWidth(), pImage.getHeight(), pImage.getType());
       BufferedImage newImage = new BufferedImage(newX, newY, pImage.getType());
       Graphics2D g2 = newImage.createGraphics();
       g2.setColor(Color.WHITE);
       g2.fillRect(0, 0, newX, newY);
       g2.rotate(-pRad + (.5 * Math.PI), newX / 2, newY / 2);
-      g2.drawImage(pImage, null, 0, 0);
+      g2.drawImage(pImage, null, (newX - pImage.getWidth()) / 2, (newY - pImage.getHeight()) / 2);
       return newImage;
 
       //The Affine Transformation allows transformation of an image while 
@@ -80,7 +77,7 @@ public class ImageRotator
 
       double cosAngle = Math.cos(angle);
       double sinAngle = Math.sin(angle);
-      newX = (int) (Math.ceil(Math.abs(oldX * cosAngle)) + Math.ceil(Math.abs(oldY * sinAngle)));
-      newY = (int) (Math.ceil(Math.abs(oldX * sinAngle)) + Math.ceil(Math.abs(oldY * cosAngle)));
+      newY = (int) (Math.ceil(Math.abs(oldX * cosAngle)) + Math.ceil(Math.abs(oldY * sinAngle)));
+      newX = (int) (Math.ceil(Math.abs(oldX * sinAngle)) + Math.ceil(Math.abs(oldY * cosAngle)));
    }
 }
