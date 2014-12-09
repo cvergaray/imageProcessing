@@ -40,13 +40,22 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("skewedImages/pg38-39.gif");
    // static Deskewer DesQ = new Deskewer("ar3.jpg");
    // static Deskewer DesQ = new Deskewer("learnedFont.png");
-   // static Deskewer DesQ = new Deskewer("character2-60.png");
+   // static Deskewer DesQ = new Deskewer("rotateTest.jpg");
 
    /**
     * @param args the command line arguments
     */
    public static void main(String[] args)
    {
+      
+      
+      BufferedImage image = DesQ.getImage();
+      
+      image = Despeckler.threshold(image, .5);
+
+      Deskewer.writeImage("MyDespeckled.png", image);
+      
+      DesQ.initWithImage(image);
 
       Double angle = -300.0;
       while (angle == -300.0 && DesQ.getThreshold() > 0)
@@ -58,15 +67,11 @@ public class ImageProcessing
 
       System.out.println("angle == " + angle);
 
-      BufferedImage image = DesQ.getImage();
-
-      image = ImageRotator.rotateRad(image, angle);
+      image = ImageRotator.rotateRad(image, -angle);
 
       Deskewer.writeImage("MyRotated.png", image);
 
       image = Despeckler.threshold(image, .5);
-
-      Deskewer.writeImage("MyDespeckled.png", image);
 
 /*      
       List<List<ProcessedCharacter>> lines = CharacterExtractor.extractAll(image);      

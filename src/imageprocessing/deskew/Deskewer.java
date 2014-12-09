@@ -80,15 +80,15 @@ public class Deskewer
    
    public void initWithImage(BufferedImage pImage)
    {
-      System.err.println("Initializing...");
+//      System.err.println("Initializing...");
 
       //Default threshold. This should work for clean pictures.
-      threshold = 300;
+      threshold = 1000;
 
       image = pImage;
       mWidth = image.getWidth();
       mHeight = image.getHeight();
-      System.err.println("Done Initializing...");
+//      System.err.println("Done Initializing...");
 
       // Calculate the maximum height the hough array needs to have 
       mAccumHeight = (int) (Math.sqrt(2) * Math.max(mHeight, mWidth)) / 2;
@@ -152,16 +152,21 @@ public class Deskewer
    {
       try
       {
-         System.err.println("Starting loop...");
+//         System.err.println("Starting loop...");
 
-         for (int y = 0; y < mHeight - 1; y++)
+         for (int y = 1; y < mHeight - 1; y++)
          {
             //System.out.println("Starting row #" + y + " of " + mHeight);
             for (int x = 0; x < mWidth; x++)
             {
+               //Theoretically, a pixel whose lower or upper neighbor is dark  
+               //is much more likely to be a baseline pixel than any random 
+               //dark one.
                Color c1 = new Color(image.getRGB(x, y));
                Color c2 = new Color(image.getRGB(x, y + 1));
-               if (isDark(c1) && !isDark(c2))
+               Color c3 = new Color(image.getRGB(x, y - 1));
+
+               if (isDark(c1) && (!isDark(c2) ^ !isDark(c3)))
                {
                   //System.out.println("Pixel (" + x + "," + y + ") is dark.");
                   for (int t = 0; t < m_CountSteps; t++)
@@ -181,11 +186,11 @@ public class Deskewer
             }
          }
 
-         System.err.println("Getting top 20");
+//         System.err.println("Getting top 20");
 
          getTop20V1(20);
 
-         System.err.println("Got top 20");
+//         System.err.println("Got top 20");
 
          int count = 0;
          double skewAngle = 0.0;
@@ -201,7 +206,7 @@ public class Deskewer
                   System.err.println("Adding " + current.getAngle() + " with " + current.votes + " votes to running total");
                   skewAngle += current.getAngle();
                   count++;
-                  current.draw(image, Color.RED.getRGB());
+                  current.draw(image, Color.CYAN.getRGB());
                }
             }
             if (count == 0)
@@ -217,7 +222,7 @@ public class Deskewer
          if (count > 0)
          {
             System.out.println("Angle == " + skewAngle / (double) count);
-            return (skewAngle) / (double) count;
+            return ((skewAngle) / (double) count) - (.5 * Math.PI);
          }
 
       } catch (Exception e)
@@ -271,7 +276,7 @@ public class Deskewer
 
    private void getTop20V1(int pNum)
    {
-      System.err.println("Within top 20");
+//      System.err.println("Within top 20");
 
       HoughCoordinates tmp = new HoughCoordinates();
 
@@ -325,15 +330,15 @@ public class Deskewer
    {
 
       /**
-       * Compares the rank of two couples to determyne whych had the better
-       * (smaller) fynal placement. A negatyve number yndycates that the fyrst
-       * couple ys better than the other, posytyve numbers yndycate that second
-       * couple ys placed better. Zero means they are the same.
+       * Compares the rank of two couples to determine which had the better
+       * (smaller) final placement. A negative number indicates that the first
+       * point is better than the other, positive numbers indicate that second
+       * point is placed better. Zero means they are the same.
        *
-       * @param a The fyrst couple to be compared
-       * @param b The second couple to be compared
+       * @param a The first point to be compared
+       * @param b The second point to be compared
        *
-       * @return an ynteger yndycatyng whych couple ys greater
+       * @return an integer indicating which point is greater
        */
       @Override
       public int compare(HoughCoordinates a, HoughCoordinates b)

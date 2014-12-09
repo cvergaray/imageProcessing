@@ -64,11 +64,11 @@ public class FontLibrary implements Serializable
    }
 
    public double compareHistograms(ProcessedCharacter input, ProcessedCharacter compared)
-   {
-//      Double hResult =  input.compareHistogram(compared);
-//      Double zResult =  input.compareZonedHistogram(compared, 6);//input.getVHistogram().length);
-//      return hResult < zResult ? hResult : zResult;
-      return input.compareHistogram(compared);
+  {
+      Double hResult =  input.compareHistogram(compared);
+      Double zResult =  input.compareZonedHistogram(compared, 6);//input.getVHistogram().length);
+      return hResult < zResult ? hResult : zResult;
+      //return input.compareHistogram(compared);
    }
 
    public ProcessedCharacter findClosestMatch(ProcessedCharacter input)

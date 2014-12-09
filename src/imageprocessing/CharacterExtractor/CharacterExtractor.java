@@ -49,6 +49,14 @@ public class CharacterExtractor
       return projections;
    }
 
+   /**
+    * A function to get the projections across the rows.
+    * A projection is the sum of all the dark characters across a single row.
+    * The resultant array will be the same size as the height of the image. 
+    * Thus, the resultant array will contain the 
+    * @param image
+    * @return 
+    */
    public static int[] getHorizontalProjections(BufferedImage image)
    {
       int[] projections;
@@ -122,20 +130,23 @@ public class CharacterExtractor
             while (x < image.getWidth() && x < projections.length && projections[x] > 0)
             {
                //Double twoPixel = 2.0 / (double) image.getHeight();
-               if (projections[x] <= 3 && x > 0 && x < image.getWidth() - 1)
+               if (projections[x] <= 3 && x > 1 && x < image.getWidth() - 1)
                {
-                  Boolean combined = false;
+                  Boolean combinedRight = false;
+                  Boolean combinedLeft = false;
 
                   for (int i = 1; i < image.getHeight() - 1; i++)
                   {
                      if (image.getRGB(x, i) == Color.BLACK.getRGB())
                      {
-                        combined |= image.getRGB(x, i) == image.getRGB(x + 1, i - 1);
-                        combined |= image.getRGB(x, i) == image.getRGB(x + 1, i);
-                        combined |= image.getRGB(x, i) == image.getRGB(x + 1, i + 1);
-                     }
+                        combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i - 1);
+                        combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i);
+                        combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i + 1);
+                        combinedLeft  |= image.getRGB(x, i) == image.getRGB(x - 1, i - 1);
+                        combinedLeft  |= image.getRGB(x, i) == image.getRGB(x - 1, i);
+                        combinedLeft  |= image.getRGB(x, i) == image.getRGB(x - 1, i + 1);                     }
                   }
-                  if (!combined)
+                  if (!combinedRight ^ !combinedLeft)
                   {
                      break;
                   }
@@ -154,7 +165,7 @@ public class CharacterExtractor
             for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
             if (characters.size() > 0)
             {
-               characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > .15);
+               characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > .6);
                //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > (.5 * currentLibrary.typicalAR));
 
             }
@@ -288,7 +299,7 @@ public class CharacterExtractor
             confidence += current.confidence;
             count++;
             //System.out.println(current.value + " : " + current.confidence);
-            Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() + ".png", current.getImageSegment());
+            Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() + "-" + current.getAspectRatio() + ".png", current.getImageSegment());
 
          }
       }
