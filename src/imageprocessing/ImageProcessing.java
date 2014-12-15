@@ -28,7 +28,7 @@ public class ImageProcessing
 {
    // SimpleFileChooser fileChooser = new SimpleFileChooser();
 
-    static Deskewer DesQ = new Deskewer("skewedImages/bcnotdetected.jpg");
+   // static Deskewer DesQ = new Deskewer("skewedImages/bcnotdetected.jpg");
    // static Deskewer DesQ = new Deskewer("skewedImages/p16.jpg");
    // static Deskewer DesQ = new Deskewer("skewedImages/Sample25Degrees.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Sample355Degrees.png");
@@ -41,6 +41,9 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("ar3.jpg");
    // static Deskewer DesQ = new Deskewer("learnedFont.png");
    // static Deskewer DesQ = new Deskewer("rotateTest.jpg");
+    static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample A.png");
+   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample B.png");
+   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample C.png");
 
    /**
     * @param args the command line arguments
@@ -58,11 +61,11 @@ public class ImageProcessing
       DesQ.initWithImage(image);
 
       Double angle = -300.0;
-      while (angle == -300.0 && DesQ.getThreshold() > 0)
-      {
-         DesQ.setThreshold(DesQ.getThreshold() - 1);
+      //while (angle == -300.0 && DesQ.getThreshold() > 0)
+      //{
+      //   DesQ.setThreshold(DesQ.getThreshold() - 1);
          angle = DesQ.GetHoughAngle();
-      }
+      //}
       if(angle == -300.0) angle = 0.0;
 
       System.out.println("angle == " + angle);
@@ -89,19 +92,31 @@ public class ImageProcessing
          }
       }
 */
-//      CharacterExtractor.learnFont("COURIER.ttf", "Monospace");
+      CharacterExtractor.learnFont("COURIER.ttf", "Monospace");
 
-      CharacterExtractor.learnFont("Times New Roman.ttf", "I Pretend");
+//      CharacterExtractor.learnFont("Times New Roman.ttf", "I Pretend");
 
+      String interpreted = CharacterExtractor.identifyCharacters(image);
       
-      System.out.println(CharacterExtractor.identifyCharacters(image));
+      System.out.println(interpreted);
       String expected = "!";
       for(int i = 35; i < 127; i++)
       {
          expected += (char) i;
       }
       System.out.println(expected);
+
+      int correct = 0;
+      expected = "This is a section of sample text. Please detect it,\nalgorithm. I need you to work.";
+      int length = interpreted.length() < expected.length() ? interpreted.length() : expected.length();
+      for(int i = 0; i < length; i++)
+      {
+         correct += (expected.charAt(i) == interpreted.charAt(i)) ? 1 : 0;
+      }
       
+      System.out.println("Number of correct characters: " + correct + " / " + length);
+      System.out.println("Percent correct: " + Math.round((double) correct / length * 100.0) + "%");
+              
 //      CharacterExtractor.learnFont("Pretendo.ttf", "I Pretend");
    }
 

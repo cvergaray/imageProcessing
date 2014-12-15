@@ -17,8 +17,8 @@ import java.util.List;
 public class FontLibrary implements Serializable
 {
 
-   private List<List<ProcessedCharacter>> characters;
-   private String fontName;
+   private final List<List<ProcessedCharacter>> characters;
+   private final String fontName;
    private int countCharacters;
    public double typicalAR;
    
@@ -65,10 +65,16 @@ public class FontLibrary implements Serializable
 
    public double compareHistograms(ProcessedCharacter input, ProcessedCharacter compared)
   {
-      Double hResult =  input.compareHistogram(compared);
-      Double zResult =  input.compareZonedHistogram(compared, 6);//input.getVHistogram().length);
-      return hResult < zResult ? hResult : zResult;
-      //return input.compareHistogram(compared);
+      //Double hResult =  input.compareHistogram(compared);
+      //Double zResult =  input.compareZonedHistogram(compared, 6);//input.getVHistogram().length);
+      //return hResult < zResult ? hResult : zResult;
+       
+      return input.compareHistograms(compared);
+      
+      //Double hResult =  input.compareHHistogram(compared);
+      //Double vResult =  input.compareVHistogram(compared);
+      //return hResult < vResult ? hResult : vResult;
+      
    }
 
    public ProcessedCharacter findClosestMatch(ProcessedCharacter input)
@@ -83,15 +89,16 @@ public class FontLibrary implements Serializable
             for (ProcessedCharacter current : currentLine)
             {
                double histogramConfidence = compareHistograms(input, current);
-               //System.out.println("difference: " + histogramConfidence);
+//               System.out.println("difference: " + histogramConfidence);
                if (histogramConfidence < lowestFound)
                {
                   lowestFound = histogramConfidence;
                   lowestMatch = current;
+                  if(lowestFound == 0) break;
                }
             }
          }
-         //System.out.println("Selected: " + lowestMatch.value);
+         System.out.println("Selected: " + lowestMatch.value);
          input.confidence = lowestFound;
          input.value = lowestMatch.value;
       }
@@ -164,7 +171,8 @@ public class FontLibrary implements Serializable
 
       } catch (Exception e)
       {
-         e.printStackTrace(); // If there was an error, print the info.
+         System.out.println("Library could not be loaded. Attempting to generate..");
+         //e.printStackTrace(); // If there was an error, print the info.
          return null;
       }
       return loadedLibrary;

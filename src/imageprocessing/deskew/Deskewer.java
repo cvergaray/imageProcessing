@@ -9,7 +9,9 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -33,6 +35,8 @@ public class Deskewer
    protected int[][] mAccumulatorMatrix;
    protected int m_CountSteps = 180;
    protected double m_AlphaStep = Math.PI / m_CountSteps;
+   
+   protected int mNeighbourhoodSize = 4;
 
    // the height of the accumulator array 
    protected int mAccumHeight;
@@ -84,6 +88,8 @@ public class Deskewer
 
       //Default threshold. This should work for clean pictures.
       threshold = 1000;
+      
+      mNumPoints = 0;
 
       image = pImage;
       mWidth = image.getWidth();
@@ -166,7 +172,7 @@ public class Deskewer
                Color c2 = new Color(image.getRGB(x, y + 1));
                Color c3 = new Color(image.getRGB(x, y - 1));
 
-               if (isDark(c1) && (!isDark(c2) ^ !isDark(c3)))
+               if (isDark(c1) && (!isDark(c2)/* ^ !isDark(c3)*/))
                {
                   //System.out.println("Pixel (" + x + "," + y + ") is dark.");
                   for (int t = 0; t < m_CountSteps; t++)
@@ -182,14 +188,16 @@ public class Deskewer
                         mAccumulatorMatrix[t][r]++;
                      }
                   }
+                  mNumPoints++;
                }
             }
          }
 
 //         System.err.println("Getting top 20");
 
+         
          getTop20V1(20);
-
+ //        getLines(20);
 //         System.err.println("Got top 20");
 
          int count = 0;
@@ -206,13 +214,14 @@ public class Deskewer
                   System.err.println("Adding " + current.getAngle() + " with " + current.votes + " votes to running total");
                   skewAngle += current.getAngle();
                   count++;
-                  current.draw(image, Color.CYAN.getRGB());
+                  //current.draw(image, Color.CYAN.getRGB());
                }
             }
             if (count == 0)
             {
                threshold = threshold - 1;
             }
+            
          }
 
          writeImage("MyTransformed.png", image);
@@ -274,8 +283,11 @@ public class Deskewer
        */
    }
 
-   private void getTop20V1(int pNum)
+   private Boolean getTop20V1(int pNum)
    {
+      
+      Boolean foundOne = false;
+      
 //      System.err.println("Within top 20");
 
       HoughCoordinates tmp = new HoughCoordinates();
@@ -289,15 +301,31 @@ public class Deskewer
 
       for (int i = 0; i < m_CountSteps; i++)
       {
-         for (int j = 0; j < mHeight; j++)
+         loop:
+         for (int j = mNeighbourhoodSize; j < mDoubleHeight; j++)
          {
 //            System.err.print("Now testing for larger votes between: ");
-//            System.err.print(mAccumulatorMatrix[y][x] + " and ");
-//            System.err.println(top20.get(pNum - 1).votes);
-//            System.out.println("Working on (" + y + "," + x + ")");
+//            System.err.print(mAccumulatorMatrix[i][j] + " and ");
+//            System.err.println(top20[pNum - 1].votes);
+//            System.out.println("Working on (" + i + "," + j + ")");
 
             if (mAccumulatorMatrix[i][j] > top20[pNum - 1].votes)
             {
+               int peak = mAccumulatorMatrix[i][j];
+                    // Check that this peak is indeed the local maxima 
+                    for (int dx = -mNeighbourhoodSize; dx <= mNeighbourhoodSize; dx++) { 
+                        for (int dy = -mNeighbourhoodSize; dy <= mNeighbourhoodSize; dy++) { 
+                            int dt = i + dx; 
+                            int dr = j + dy; 
+                            if (dt < 0) dt = dt + m_CountSteps; 
+                            else if (dt >= m_CountSteps) dt = dt - m_CountSteps; 
+                            if (mAccumulatorMatrix[dt][dr] > peak) { 
+                                // found a bigger point nearby, skip 
+                                continue loop; 
+                            } 
+                        } 
+                    } 
+                    foundOne = true;
 //               System.err.println("Found a better one!");
 
                top20[pNum - 1].setAngle(m_AlphaStep * i);
@@ -307,7 +335,7 @@ public class Deskewer
                int k = pNum - 1;
 //               System.err.println("Entering While");
 
-               while (k > 0 && top20[pNum - 1].votes > top20[k - 1].votes)
+               while (k > 0 && top20[k].votes > top20[k - 1].votes)
                {
                   tmp = top20[k];
                   top20[k] = top20[k - 1];
@@ -319,6 +347,7 @@ public class Deskewer
             }
          }
       }
+      return foundOne;
    }
 
    /**

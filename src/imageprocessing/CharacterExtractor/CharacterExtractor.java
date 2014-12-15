@@ -50,12 +50,13 @@ public class CharacterExtractor
    }
 
    /**
-    * A function to get the projections across the rows.
-    * A projection is the sum of all the dark characters across a single row.
-    * The resultant array will be the same size as the height of the image. 
-    * Thus, the resultant array will contain the 
+    * A function to get the projections across the rows. A projection is the sum
+    * of all the dark characters across a single row. The resultant array will
+    * be the same size as the height of the image. Thus, the resultant array
+    * will contain the
+    *
     * @param image
-    * @return 
+    * @return
     */
    public static int[] getHorizontalProjections(BufferedImage image)
    {
@@ -91,7 +92,9 @@ public class CharacterExtractor
             {
                y++;
             }
-            lines.add(new ProcessedCharacter(image.getSubimage(0, top, image.getWidth(), y - top), count));
+            ProcessedCharacter temp = new ProcessedCharacter(image.getSubimage(0, top, image.getWidth(), y - top), count);
+            temp.trimImage();
+            lines.add(temp);
             count++;
             //y--;
          }
@@ -142,9 +145,10 @@ public class CharacterExtractor
                         combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i - 1);
                         combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i);
                         combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i + 1);
-                        combinedLeft  |= image.getRGB(x, i) == image.getRGB(x - 1, i - 1);
-                        combinedLeft  |= image.getRGB(x, i) == image.getRGB(x - 1, i);
-                        combinedLeft  |= image.getRGB(x, i) == image.getRGB(x - 1, i + 1);                     }
+                        combinedLeft |= image.getRGB(x, i) == image.getRGB(x - 1, i - 1);
+                        combinedLeft |= image.getRGB(x, i) == image.getRGB(x - 1, i);
+                        combinedLeft |= image.getRGB(x, i) == image.getRGB(x - 1, i + 1);
+                     }
                   }
                   if (!combinedRight ^ !combinedLeft)
                   {
@@ -155,25 +159,55 @@ public class CharacterExtractor
             }
             if (x != left)
             {
-               characters.add(new ProcessedCharacter(image.getSubimage(left, 0, x - left, image.getHeight()), characterID, lineID));
+               int charWidth = (x - left);
+               if (charWidth > 11)
+               {
+                  charWidth = charWidth / 2;
+                  characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
+                  characters.get(characters.size() - 1).followedBySpace = true;
+                  characterID++;
+                  left += charWidth;
+                  characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
+               } else
+               {
+                  characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
+               }
             }
 
             //Look ahead to see if the next block of blank pixels are at least 
             //half the width of the current character. If so, it's probably a 
             //space
-            int temp = x;
+            int temp = x + 1;
             for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
+
             if (characters.size() > 0)
             {
-               characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > .6);
-               //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > (.5 * currentLibrary.typicalAR));
-
+               characters.set(characters.size() - 1, getSpacing(characters.get(characters.size() - 1), image, x, projections));
+               //characters.get(characters.size() - 1).followedBySpace = ((temp - x) > 5);
+               //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && ((double) (temp - x) / (double) (x - left)) > .5);
+               //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > (.5 * currentLibrary.typicalAR));            
             }
             characterID++;
             //x--;
          }
       }
       return characters;
+   }
+
+   public static ProcessedCharacter getSpacing(ProcessedCharacter charToProcess, BufferedImage image, int x, int[] projections)
+   {
+      int temp = x + 1;
+      for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
+
+      Deskewer.writeImage("test-" + charToProcess + ".png", charToProcess.getImageSegment());
+      charToProcess.setFollowedBySpace((temp - x) > 8);
+      /*
+       if(currentLibrary == null)
+       characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > .6);
+       else
+       characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > (.5 * currentLibrary.typicalAR));
+       */
+      return charToProcess;
    }
 
    public static List<List<ProcessedCharacter>> extractAll(BufferedImage image)
@@ -191,7 +225,7 @@ public class CharacterExtractor
          try
          {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            font = Font.createFont(Font.TRUETYPE_FONT, new File(FileName)).deriveFont(36F);
+            font = Font.createFont(Font.TRUETYPE_FONT, new File(FileName)).deriveFont(24F);
             ge.registerFont(font);
             System.out.println("Loaded font " + font.getName() + "From TTF");
          } catch (Exception e)
@@ -256,8 +290,9 @@ public class CharacterExtractor
             /*
              current.value = (char) i;
              current.calculateHistograms();
-             Deskewer.writeImage("output/character" + current.getLineNum() + "-" + i + ".png", current.getImageSegment());
              */
+
+//             Deskewer.writeImage("output/character" /*+ current.getLineNum() */+ "-" + i + ".png", current.getImageSegment());
             i++;
 
             averageAR += current.getAspectRatio();
@@ -270,7 +305,6 @@ public class CharacterExtractor
       FontLibrary.SaveLibrary(currentLibrary);
 
       //Deskewer.writeImage("LearnedFont.png", bufferedImage);
-
       System.err.println("FontLibrary Generated from TTF: " + currentLibrary.name());
 
    }
@@ -298,8 +332,8 @@ public class CharacterExtractor
          {
             confidence += current.confidence;
             count++;
-            //System.out.println(current.value + " : " + current.confidence);
-            Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() + "-" + current.getAspectRatio() + ".png", current.getImageSegment());
+            System.out.println(current.value + " : " + current.confidence);
+            Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() /*+ "-" + current.getAspectRatio() */ + ".png", current.getImageSegment());
 
          }
       }

@@ -49,14 +49,15 @@ import javax.imageio.ImageIO;
 public class HoughTransform extends Thread { 
  
     public static void main(String[] args) throws Exception { 
-        String filename = "skewedImages/bcnotdetected.jpg"; 
+        //String filename = "skewedImages/bcnotdetected.jpg"; 
         //String filename = "skewedImages/p16.jpg"; 
         //String filename = "skewedImages/image138.jpg"; 
+        String filename = "skewedImages/Courier Sample A.png"; 
  
         // load the file using Java's imageIO library 
         BufferedImage image = javax.imageio.ImageIO.read(new File(filename)); 
  
-        image = GrayScale(image);
+        //image = GrayScale(image);
 
         // create a hough transform object with the right dimensions 
         HoughTransform h = new HoughTransform(image.getWidth(), image.getHeight()); 
@@ -65,7 +66,7 @@ public class HoughTransform extends Thread {
         h.addPoints(image); 
  
         // get the lines out 
-        Vector<HoughLine> lines = h.getLines(70); 
+        Vector<HoughLine> lines = h.getLines(50); 
  
         double thetaAccum = 0;
         double rAccum = 0;
@@ -89,8 +90,8 @@ public class HoughTransform extends Thread {
         System.out.println("Average Theta: " + thetaAccum + " Distance: " + rAccum);
         
         
-       File ouptut = new File("Transformed.jpg");
-       ImageIO.write(image, "jpg", ouptut);       
+       File ouptut = new File("Transformed.png");
+       ImageIO.write(image, "png", ouptut);       
     } 
  
     // The size of the neighbourhood in which to search for other local maxima 

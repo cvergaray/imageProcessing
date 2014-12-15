@@ -121,12 +121,22 @@ public class ProcessedCharacter implements Serializable
 
    public int[] getVHistogram()
    {
+      if(vHistogram == null)
+         calculateHistograms();
       return vHistogram;
    }
 
    public int[] getHHistogram()
    {
+      if(hHistogram == null)
+         calculateHistograms();
       return hHistogram;
+   }
+   
+   public void setFollowedBySpace(Boolean hasSpace)
+   {
+      if(followedBySpace == null)
+         followedBySpace = hasSpace;
    }
 
    public double[] getVRHistogram()
@@ -184,19 +194,22 @@ public class ProcessedCharacter implements Serializable
       calculateHistograms();
    }
 
-   /**
+   
+      /**
     * CompareHistogram
     *
     * @param input a ProcessedCharacter that is to be compared.
     * @return
     */
-   double compareHistogram(ProcessedCharacter input)
+   double compareHistograms(ProcessedCharacter input)
    {
 
       //First check the aspect ratios
       //If they are very different, one of the projections is probably limited
       //and histogram comparisons would probably be difficult.
-      if (Math.abs(input.getAspectRatio() - this.getAspectRatio()) > 10)
+//      if (Math.abs(input.getAspectRatio() - this.getAspectRatio()) > .1 * this.getAspectRatio())
+      if (input.getAspectRatio() < .5 * this.getAspectRatio() ||
+          this.getAspectRatio()  < .5 * input.getAspectRatio())
       {
          //System.out.println("Difference is: " + Math.abs(input.getAspectRatio() - this.getAspectRatio()));
          return Double.MAX_VALUE;
@@ -237,6 +250,112 @@ public class ProcessedCharacter implements Serializable
       //The difference factor is the average of how many pixels are different 
       //in each projection (horizontal and vertical combined)
       differenceFactor = differenceFactor / (double) (smallerHHistogram.length + smallerVHistogram.length);
+
+      return differenceFactor;
+   }
+   
+    /**
+    * CompareHistogram
+    *
+    * @param input a ProcessedCharacter that is to be compared.
+    * @return
+    */
+   double compareVHistogram(ProcessedCharacter input)
+   {
+
+      //First check the aspect ratios
+      //If they are very different, one of the projections is probably limited
+      //and histogram comparisons would probably be difficult.
+//      if (Math.abs(input.getAspectRatio() - this.getAspectRatio()) > .1 * this.getAspectRatio())
+      if (input.getAspectRatio() < .5 * this.getAspectRatio() ||
+          this.getAspectRatio()  < .5 * input.getAspectRatio())
+      {
+         //System.out.println("Difference is: " + Math.abs(input.getAspectRatio() - this.getAspectRatio()));
+         return Double.MAX_VALUE;
+      }
+
+      //Just in case the histograms have not been calculated, calculate now
+      calculateHistograms();
+
+      //Select the smaller of the histograms so we stay within the limits of 
+      //what can be compared.
+      //TODO: Find a way to normalize the histograms so they are closer to 
+      //the same size
+      double[] smallerVHistogram = vHistogram.length > input.getVHistogram().length ? input.getVRHistogram() : getVRHistogram();
+      double[]  largerVHistogram = vHistogram.length > input.getVHistogram().length ? getVRHistogram() : input.getVRHistogram();
+      //This will keep track of how different the images are.
+      double differenceFactor = 0;
+
+      /*
+       The differences are calculated and tallied in the differenceFactor 
+       variable.
+       The calculations are made by subtracting one projection from the other 
+       and adding the absolute value of the difference. This will allow 
+       commutativity between characters when comparing.
+       */
+      double ar = input.getAspectRatio();
+      //if(ar < 7.0)
+      for (int i = 0; i < smallerVHistogram.length; i++)
+      {
+         differenceFactor += Math.abs(smallerVHistogram[i] - largerVHistogram[i]);
+      }
+
+      //The difference factor is the average of how many pixels are different 
+      //in each projection (horizontal and vertical combined)
+      differenceFactor = differenceFactor / (double) smallerVHistogram.length;
+
+      return differenceFactor;
+   }
+   
+   /**
+    * CompareHistogram
+    *
+    * @param input a ProcessedCharacter that is to be compared.
+    * @return
+    */
+   double compareHHistogram(ProcessedCharacter input)
+   {
+
+      //First check the aspect ratios
+      //If they are very different, one of the projections is probably limited
+      //and histogram comparisons would probably be difficult.
+//      if (Math.abs(input.getAspectRatio() - this.getAspectRatio()) > .1 * this.getAspectRatio())
+      if (input.getAspectRatio() < .5 * this.getAspectRatio() ||
+          this.getAspectRatio()  < .5 * input.getAspectRatio())
+      {
+         //System.out.println("Difference is: " + Math.abs(input.getAspectRatio() - this.getAspectRatio()));
+         return Double.MAX_VALUE;
+      }
+
+      //Just in case the histograms have not been calculated, calculate now
+      calculateHistograms();
+
+      //Select the smaller of the histograms so we stay within the limits of 
+      //what can be compared.
+      //TODO: Find a way to normalize the histograms so they are closer to 
+      //the same size
+      double[] smallerHHistogram = hHistogram.length > input.getHHistogram().length ? input.getHRHistogram() : getHRHistogram();
+      double[]  largerHHistogram = hHistogram.length > input.getHHistogram().length ? getHRHistogram() : input.getHRHistogram();
+      //This will keep track of how different the images are.
+      double differenceFactor = 0;
+
+      /*
+       The differences are calculated and tallied in the differenceFactor 
+       variable.
+       The calculations are made by subtracting one projection from the other 
+       and adding the absolute value of the difference. This will allow 
+       commutativity between characters when comparing.
+       */
+      for (int i = 0; i < smallerHHistogram.length; i++)
+      {
+         differenceFactor += Math.abs(smallerHHistogram[i] - largerHHistogram[i]);
+      }
+      double ar = input.getAspectRatio();
+
+
+      //The difference factor is the average of how many pixels are different 
+      //in each projection (horizontal and vertical combined)
+      differenceFactor = differenceFactor / (double) smallerHHistogram.length;
 
       return differenceFactor;
    }
@@ -313,7 +432,26 @@ public class ProcessedCharacter implements Serializable
       return zonedHistogram;
    }
    
-   
+   public void trimImage()
+   {
+      int nTop = 0;
+      int nBottom = getHHistogram().length - 1;
+      Boolean notDone = true;
+      while(nTop < nBottom && notDone)
+      {
+       if(this.getHHistogram()[nTop] == 0)
+          nTop++;
+       else
+          notDone = false;
+       if(this.getHHistogram()[nBottom] == 0)
+          nBottom--;
+       else
+          notDone = false;
+      }
+      
+      if(nTop < nBottom)
+         imageSegment = imageSegment.getSubimage(0,nTop,imageSegment.getWidth(), nBottom - nTop);               
+   }
    
    
    
