@@ -214,7 +214,7 @@ public class Deskewer
                   System.err.println("Adding " + current.getAngle() + " with " + current.votes + " votes to running total");
                   skewAngle += current.getAngle();
                   count++;
-                  //current.draw(image, Color.CYAN.getRGB());
+//                  current.draw(image, Color.CYAN.getRGB());
                }
             }
             if (count == 0)

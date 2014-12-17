@@ -35,14 +35,13 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("skewedImages/zjd2b.jpg");
    // static Deskewer DesQ = new Deskewer("skewedImages/Image_003.jpg");
    // static Deskewer DesQ = new Deskewer("skewedImages/Image_005.jpg");
-   // static Deskewer DesQ = new Deskewer("skewedImages/text4991.jpg");
+   // static Deskewer DesQ = new Deskewer("skewedImages/text4991.jpg"); //This one is still unhappy
    // static Deskewer DesQ = new Deskewer("skewedImages/skew.jpg");
-   // static Deskewer DesQ = new Deskewer("skewedImages/pg38-39.gif");
-   // static Deskewer DesQ = new Deskewer("ar3.jpg");
-   // static Deskewer DesQ = new Deskewer("learnedFont.png");
-   // static Deskewer DesQ = new Deskewer("rotateTest.jpg");
-    static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample A.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample B.png");
+   // static Deskewer DesQ = new Deskewer("skewedImages/pg38-39.gif"); //The black border causes problems
+   // static Deskewer DesQ = new Deskewer("ar3.jpg"); //Not text, but edge detected anyway
+   // static Deskewer DesQ = new Deskewer("learnedFont.png"); //Baseline super accurately detected. :D
+   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample A.png");
+    static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample B.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample C.png");
 
    /**
