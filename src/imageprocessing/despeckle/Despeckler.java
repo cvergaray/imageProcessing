@@ -48,10 +48,10 @@ public class Despeckler
               && Math.abs(c1.getGreen() - c2.getGreen()) <= (similarity * 255)
               && Math.abs(c1.getBlue() - c2.getBlue()) <= (similarity * 255));
    }
-   
+
    public static boolean isSimilar(int c1, int c2, float similarity)
    {
-      return isSimilar(new Color(c1), new Color (c2), similarity);
+      return isSimilar(new Color(c1), new Color(c2), similarity);
    }
 
    public static Boolean isDark(Color c)
@@ -148,7 +148,7 @@ public class Despeckler
             Color c = new Color(image.getRGB(x, y));
             float[] hsb = Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), null);
             float brightness = hsb[2];
-            if (brightness < pThresh)
+            if (brightness < pThresh /*&& !isTransparent(c)*/)
             {
                image.setRGB(x, y, Color.BLACK.getRGB());
             } else
@@ -160,6 +160,16 @@ public class Despeckler
       }
 
       return image;
+   }
+
+   public static boolean isTransparent(Color c)
+   {
+      int pixel = c.getRGB();
+      if ((pixel >> 24) == 0x00)
+      {
+         return true;
+      }
+      return false;
    }
 
 }

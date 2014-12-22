@@ -5,6 +5,7 @@
  */
 package imageprocessing.CharacterExtractor;
 
+import imageprocessing.SpellCheckerManager;
 import java.io.*;
 import java.util.List;
 
@@ -109,16 +110,22 @@ public class FontLibrary implements Serializable
    public String matchAll(List<List<ProcessedCharacter>> input)
    {
       String processed = "";
+      String word = "";
 
       for (List<ProcessedCharacter> currentLine : input)
       {
          for (ProcessedCharacter current : currentLine)
          {
             findClosestMatch(current);
-            processed += current.value;
+            word += current.value;
             if (current.followedBySpace)
             {
+//               List<com.swabunga.spell.engine.Word> suggestion = SpellCheckerManager.getSuggestions(word, 3);
+//               if(suggestion != null && !suggestion.isEmpty())
+ //                 word = suggestion.get(0).toString();
+               processed += word;
                processed += " ";
+               word = "";
             }
          }
          processed += '\n';
@@ -134,7 +141,7 @@ public class FontLibrary implements Serializable
          // Catch errors in I/O if necessary.
          // Open a file to write to, named SavedObj.sav.
          FileOutputStream saveFile;
-         saveFile = new FileOutputStream(libToSave.fontName + ".sav");
+         saveFile = new FileOutputStream("Libraries/" + libToSave.fontName + ".sav");
 
          // Create an ObjectOutputStream to put objects into load file.
          ObjectOutputStream save = new ObjectOutputStream(saveFile);
@@ -158,7 +165,7 @@ public class FontLibrary implements Serializable
          // Catch errors in I/O if necessary.
          // Open a file to write to, named SavedObj.sav.
          FileInputStream loadFile;
-         loadFile = new FileInputStream(libName + ".sav");
+         loadFile = new FileInputStream("Libraries/" + libName + ".sav");
 
          // Create an ObjectOutputStream to put objects into load file.
          ObjectInputStream load = new ObjectInputStream(loadFile);

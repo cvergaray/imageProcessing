@@ -6,16 +6,15 @@
 package imageprocessing.CharacterExtractor;
 
 import imageprocessing.deskew.Deskewer;
-import imageprocessing.despeckle.Despeckler;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.util.List;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -160,7 +159,7 @@ public class CharacterExtractor
             if (x != left)
             {
                int charWidth = (x - left);
-               if (charWidth > 11)
+               if (charWidth > 13)
                {
                   charWidth = charWidth / 2;
                   characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
@@ -199,7 +198,7 @@ public class CharacterExtractor
       int temp = x + 1;
       for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
 
-      Deskewer.writeImage("test-" + charToProcess + ".png", charToProcess.getImageSegment());
+      Deskewer.writeImage("test-" + charToProcess.getID() + ".png", charToProcess.getImageSegment());
       charToProcess.setFollowedBySpace((temp - x) > 8);
       /*
        if(currentLibrary == null)
@@ -228,9 +227,10 @@ public class CharacterExtractor
             font = Font.createFont(Font.TRUETYPE_FONT, new File(FileName)).deriveFont(24F);
             ge.registerFont(font);
             System.out.println("Loaded font " + font.getName() + "From TTF");
-         } catch (Exception e)
+         } catch (FontFormatException | IOException e)
          {
             e.printStackTrace();
+            return;
          }
       } else
       {
@@ -341,5 +341,5 @@ public class CharacterExtractor
       System.out.println("Total confidence : " + (double) roundedConfidence / 100 + "%");
       return identifiedString;
    }
-
+ 
 }
