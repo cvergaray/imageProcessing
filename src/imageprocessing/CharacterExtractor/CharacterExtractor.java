@@ -185,10 +185,10 @@ public class CharacterExtractor
                //characters.get(characters.size() - 1).followedBySpace = ((temp - x) > 5);
                //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && ((double) (temp - x) / (double) (x - left)) > .5);
                //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > (.5 * currentLibrary.typicalAR));            
+               characters.get(characters.size() - 1).extractFeatures();
+               characters.get(characters.size() - 1).getIntersectionStrings();
             }
-            
-            characters.get(characters.size() - 1).extractFeatures();
-            
+
             characterID++;
             //x--;
          }
@@ -344,17 +344,16 @@ public class CharacterExtractor
       System.out.println("Total confidence : " + (double) roundedConfidence / 100 + "%");
       return identifiedString;
    }
- 
-   
+
    public void extractFeatures(ProcessedCharacter input)
    {
       int featureNum;
       BufferedImage segment = input.getImageSegment();
-      for(int x = 1; x < segment.getWidth(); x++)
+      for (int x = 1; x < segment.getWidth(); x++)
       {
-         for(int y = 1; y < segment.getHeight(); y++)
+         for (int y = 1; y < segment.getHeight(); y++)
          {
-            if(Deskewer.isDark(new Color(segment.getRGB(x, y))))
+            if (Deskewer.isDark(new Color(segment.getRGB(x, y))))
             {
                featureNum = 0;
                featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 1))) ? 1   : 0);
@@ -368,7 +367,43 @@ public class CharacterExtractor
                input.features[featureNum]++;
             }
          }
-      }      
+      }
    }
-   
+
+   public static String findIntersectionString(ProcessedCharacter input)
+   {
+      BufferedImage image = input.getImageSegment();
+
+      int top;
+      int[] intersections;
+      int lastIntersection = 0;
+      intersections = new int[image.getWidth()];
+      String intersectionCount = "";
+      for (int x = 0; x < image.getWidth(); x++)
+      {
+         intersections[x] = 0;
+         for (int y = 0; y < image.getHeight(); y++)
+         {
+            //System.out.println("(" + x + "," + y + ") : " + image.getRGB(x, y));
+            if (Deskewer.isDark(new Color(image.getRGB(x, y))))
+            {
+               top = y;
+               while (y < image.getHeight() && Deskewer.isDark(new Color(image.getRGB(x, y))))
+               {
+                  y++;
+               }
+               intersections[x]++;
+               //myPoints.add(new Point(x + 1, top, y));
+            }
+         }
+         if (intersections[x] != 0 && intersections[x] != lastIntersection)
+         {
+            intersectionCount += intersections[x];
+            lastIntersection = intersections[x];
+         }
+      }
+      input.intersectionStringH = intersectionCount;
+      return intersectionCount;
+   }
+
 }

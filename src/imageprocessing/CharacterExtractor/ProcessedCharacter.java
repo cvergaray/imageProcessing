@@ -33,6 +33,8 @@ public class ProcessedCharacter implements Serializable
    private int[] vHistogram;
    public Boolean followedBySpace;
    public int[] features;
+   public String intersectionStringH;
+   public String intersectionStringV;
 
    /**
     * Complete Constructor. Accepts and assigns all values within the object.
@@ -128,28 +130,34 @@ public class ProcessedCharacter implements Serializable
 
    public int[] getVHistogram()
    {
-      if(vHistogram == null)
+      if (vHistogram == null)
+      {
          calculateHistograms();
+      }
       return vHistogram;
    }
 
    public int[] getHHistogram()
    {
-      if(hHistogram == null)
+      if (hHistogram == null)
+      {
          calculateHistograms();
+      }
       return hHistogram;
    }
-   
+
    public void setFollowedBySpace(Boolean hasSpace)
    {
-      if(followedBySpace == null)
+      if (followedBySpace == null)
+      {
          followedBySpace = hasSpace;
+      }
    }
 
    public double[] getVRHistogram()
    {
-      double [] VRH = new double[vHistogram.length];
-      for(int i = 0; i < VRH.length; i++)
+      double[] VRH = new double[vHistogram.length];
+      for (int i = 0; i < VRH.length; i++)
       {
          VRH[i] = (double) vHistogram[i] / (double) imageSegment.getHeight();
       }
@@ -158,13 +166,14 @@ public class ProcessedCharacter implements Serializable
 
    public double[] getHRHistogram()
    {
-      double [] HRH = new double[hHistogram.length];
-      for(int i = 0; i < HRH.length; i++)
+      double[] HRH = new double[hHistogram.length];
+      for (int i = 0; i < HRH.length; i++)
       {
          HRH[i] = (double) hHistogram[i] / (double) imageSegment.getWidth();
       }
-      return HRH;   }
-   
+      return HRH;
+   }
+
    public double getAspectRatio()
    {
       return (double) imageSegment.getHeight()
@@ -201,8 +210,7 @@ public class ProcessedCharacter implements Serializable
       calculateHistograms();
    }
 
-   
-      /**
+   /**
     * CompareHistogram
     *
     * @param input a ProcessedCharacter that is to be compared.
@@ -215,8 +223,8 @@ public class ProcessedCharacter implements Serializable
       //If they are very different, one of the projections is probably limited
       //and histogram comparisons would probably be difficult.
 //      if (Math.abs(input.getAspectRatio() - this.getAspectRatio()) > .1 * this.getAspectRatio())
-      if (input.getAspectRatio() < .5 * this.getAspectRatio() ||
-          this.getAspectRatio()  < .5 * input.getAspectRatio())
+      if (input.getAspectRatio() < .5 * this.getAspectRatio()
+              || this.getAspectRatio() < .5 * input.getAspectRatio())
       {
          //System.out.println("Difference is: " + Math.abs(input.getAspectRatio() - this.getAspectRatio()));
          return Double.MAX_VALUE;
@@ -231,8 +239,8 @@ public class ProcessedCharacter implements Serializable
       //the same size
       double[] smallerHHistogram = hHistogram.length > input.getHHistogram().length ? input.getHRHistogram() : getHRHistogram();
       double[] smallerVHistogram = vHistogram.length > input.getVHistogram().length ? input.getVRHistogram() : getVRHistogram();
-      double[]  largerHHistogram = hHistogram.length > input.getHHistogram().length ? getHRHistogram() : input.getHRHistogram();
-      double[]  largerVHistogram = vHistogram.length > input.getVHistogram().length ? getVRHistogram() : input.getVRHistogram();
+      double[] largerHHistogram = hHistogram.length > input.getHHistogram().length ? getHRHistogram() : input.getHRHistogram();
+      double[] largerVHistogram = vHistogram.length > input.getVHistogram().length ? getVRHistogram() : input.getVRHistogram();
       //This will keep track of how different the images are.
       double differenceFactor = 0;
 
@@ -248,10 +256,12 @@ public class ProcessedCharacter implements Serializable
          differenceFactor += Math.abs(smallerHHistogram[i] - largerHHistogram[i]);
       }
       double ar = input.getAspectRatio();
-      if(ar < 7.0)
-      for (int i = 0; i < smallerVHistogram.length; i++)
+      if (ar < 7.0)
       {
-         differenceFactor += Math.abs(smallerVHistogram[i] - largerVHistogram[i]);
+         for (int i = 0; i < smallerVHistogram.length; i++)
+         {
+            differenceFactor += Math.abs(smallerVHistogram[i] - largerVHistogram[i]);
+         }
       }
 
       //The difference factor is the average of how many pixels are different 
@@ -260,8 +270,8 @@ public class ProcessedCharacter implements Serializable
 
       return differenceFactor;
    }
-   
-    /**
+
+   /**
     * CompareHistogram
     *
     * @param input a ProcessedCharacter that is to be compared.
@@ -274,8 +284,8 @@ public class ProcessedCharacter implements Serializable
       //If they are very different, one of the projections is probably limited
       //and histogram comparisons would probably be difficult.
 //      if (Math.abs(input.getAspectRatio() - this.getAspectRatio()) > .1 * this.getAspectRatio())
-      if (input.getAspectRatio() < .5 * this.getAspectRatio() ||
-          this.getAspectRatio()  < .5 * input.getAspectRatio())
+      if (input.getAspectRatio() < .5 * this.getAspectRatio()
+              || this.getAspectRatio() < .5 * input.getAspectRatio())
       {
          //System.out.println("Difference is: " + Math.abs(input.getAspectRatio() - this.getAspectRatio()));
          return Double.MAX_VALUE;
@@ -289,7 +299,7 @@ public class ProcessedCharacter implements Serializable
       //TODO: Find a way to normalize the histograms so they are closer to 
       //the same size
       double[] smallerVHistogram = vHistogram.length > input.getVHistogram().length ? input.getVRHistogram() : getVRHistogram();
-      double[]  largerVHistogram = vHistogram.length > input.getVHistogram().length ? getVRHistogram() : input.getVRHistogram();
+      double[] largerVHistogram = vHistogram.length > input.getVHistogram().length ? getVRHistogram() : input.getVRHistogram();
       //This will keep track of how different the images are.
       double differenceFactor = 0;
 
@@ -313,38 +323,38 @@ public class ProcessedCharacter implements Serializable
 
       return differenceFactor;
    }
-   
-      /**
-    * CompareFeatures.
-    * This works by comparing the features array of two characters. In this case,
-    * there are always 256 items in both arrays, so the checks for size used in
-    * the other compare functions are not necessary. Instead we can directly
-    * compare the two arrays.
-    * The reason there are 256 items is because we can treat all pixels 
-    * surrounding a dark pixel as binary digits of which the value is determined
-    * by the darkness of the pixel. Therefore, there are 2^8 = 256 possibilities
-    * and they can be indexed by setting the corresponding bits and using the 
-    * resultant number as an index into the array.
-    * The bits are assigned starting at the LSB from the top left pixel and
-    * moving the same way we read in English, skipping the middle pixel.
-    * Thus, the (decimal) numbers used as masks for each pixel are represented 
-    * in the following grid:
-    * [001 : 002 : 004]
+
+   /**
+    * CompareFeatures. This works by comparing the features array of two
+    * characters. In this case, there are always 256 items in both arrays, so
+    * the checks for size used in the other compare functions are not necessary.
+    * Instead we can directly compare the two arrays. The reason there are 256
+    * items is because we can treat all pixels surrounding a dark pixel as
+    * binary digits of which the value is determined by the darkness of the
+    * pixel. Therefore, there are 2^8 = 256 possibilities and they can be
+    * indexed by setting the corresponding bits and using the resultant number
+    * as an index into the array. The bits are assigned starting at the LSB from
+    * the top left pixel and moving the same way we read in English, skipping
+    * the middle pixel. Thus, the (decimal) numbers used as masks for each pixel
+    * are represented in the following grid: 
+    * [001 : 002 : 004] 
     * [008 : 000 : 016]
     * [032 : 064 : 128]
-    * 
+    *
     * @param input a ProcessedCharacter that is to be compared.
     * @return
     */
    double compareFeatures(ProcessedCharacter input)
    {
-      if(input.features == null || features == null)
+      if (input.features == null || features == null)
+      {
          return Double.MAX_VALUE;
-      
+      }
+
       //This will keep track of how different the images are.
       double differenceFactor = 0;
-            
-       /*
+
+      /*
        The differences are calculated and tallied in the differenceFactor 
        variable.
        The calculations are made by subtracting one projection from the other 
@@ -355,15 +365,25 @@ public class ProcessedCharacter implements Serializable
       {
          differenceFactor += Math.abs(input.features[i] - features[i]);
       }
-      
+
 //      countValue = countValue > 0 ? countValue : 1;
-      
       //The difference factor is the average of how many features are different 
       differenceFactor = differenceFactor / 256;
 
-      return differenceFactor;   
+      return differenceFactor;
    }
 
+   public int compareIntersectStrings(ProcessedCharacter other)
+   {
+      if(other == null)
+         return Integer.MAX_VALUE;
+      this.getIntersectionStrings();
+      other.getIntersectionStrings();
+      int horizontal = this.intersectionStringH.compareTo(other.intersectionStringH);
+      int vertical = this.intersectionStringV.compareTo(other.intersectionStringV);
+      
+      return Math.abs(horizontal) + Math.abs(vertical);
+   }
    
    /**
     * CompareHistogram
@@ -378,8 +398,8 @@ public class ProcessedCharacter implements Serializable
       //If they are very different, one of the projections is probably limited
       //and histogram comparisons would probably be difficult.
 //      if (Math.abs(input.getAspectRatio() - this.getAspectRatio()) > .1 * this.getAspectRatio())
-      if (input.getAspectRatio() < .5 * this.getAspectRatio() ||
-          this.getAspectRatio()  < .5 * input.getAspectRatio())
+      if (input.getAspectRatio() < .5 * this.getAspectRatio()
+              || this.getAspectRatio() < .5 * input.getAspectRatio())
       {
          //System.out.println("Difference is: " + Math.abs(input.getAspectRatio() - this.getAspectRatio()));
          return Double.MAX_VALUE;
@@ -393,7 +413,7 @@ public class ProcessedCharacter implements Serializable
       //TODO: Find a way to normalize the histograms so they are closer to 
       //the same size
       double[] smallerHHistogram = hHistogram.length > input.getHHistogram().length ? input.getHRHistogram() : getHRHistogram();
-      double[]  largerHHistogram = hHistogram.length > input.getHHistogram().length ? getHRHistogram() : input.getHRHistogram();
+      double[] largerHHistogram = hHistogram.length > input.getHHistogram().length ? getHRHistogram() : input.getHRHistogram();
       //This will keep track of how different the images are.
       double differenceFactor = 0;
 
@@ -409,7 +429,6 @@ public class ProcessedCharacter implements Serializable
          differenceFactor += Math.abs(smallerHHistogram[i] - largerHHistogram[i]);
       }
       double ar = input.getAspectRatio();
-
 
       //The difference factor is the average of how many pixels are different 
       //in each projection (horizontal and vertical combined)
@@ -489,65 +508,72 @@ public class ProcessedCharacter implements Serializable
 
       return zonedHistogram;
    }
-   
+
    public void trimImage()
    {
       int nTop = 0;
       int nBottom = getHHistogram().length - 1;
       Boolean notDone = true;
-      while(nTop < nBottom && notDone)
+      while (nTop < nBottom && notDone)
       {
-       if(this.getHHistogram()[nTop] == 0)
-          nTop++;
-       else
-          notDone = false;
-       if(this.getHHistogram()[nBottom] == 0)
-          nBottom--;
-       else
-          notDone = false;
+         if (this.getHHistogram()[nTop] == 0)
+         {
+            nTop++;
+         } else
+         {
+            notDone = false;
+         }
+         if (this.getHHistogram()[nBottom] == 0)
+         {
+            nBottom--;
+         } else
+         {
+            notDone = false;
+         }
       }
-      
-      if(nTop < nBottom)
-         imageSegment = imageSegment.getSubimage(0,nTop,imageSegment.getWidth(), nBottom - nTop);               
-   }
-   
-   
-   
-   /**
-   * Always treat de-serialization as a full-blown constructor, by
-   * validating the final state of the de-serialized object.
-   */
-   private void readObject(
-     ObjectInputStream aInputStream
-   ) throws ClassNotFoundException, IOException {
-     //always perform the default de-serialization first
-     aInputStream.defaultReadObject();
-     imageSegment = ImageIO.read(aInputStream);
-     //ensure that object state has not been corrupted or tampered with maliciously
-    // validateState();
-  }
 
-    /**
-    * This is the default implementation of writeObject.
-    * Customize if necessary.
+      if (nTop < nBottom)
+      {
+         imageSegment = imageSegment.getSubimage(0, nTop, imageSegment.getWidth(), nBottom - nTop);
+      }
+   }
+
+   /**
+    * Always treat de-serialization as a full-blown constructor, by validating
+    * the final state of the de-serialized object.
     */
-    private void writeObject(
-      ObjectOutputStream aOutputStream
-    ) throws IOException {
+   private void readObject(
+           ObjectInputStream aInputStream
+   ) throws ClassNotFoundException, IOException
+   {
+      //always perform the default de-serialization first
+      aInputStream.defaultReadObject();
+      imageSegment = ImageIO.read(aInputStream);
+     //ensure that object state has not been corrupted or tampered with maliciously
+      // validateState();
+   }
+
+   /**
+    * This is the default implementation of writeObject. Customize if necessary.
+    */
+   private void writeObject(
+           ObjectOutputStream aOutputStream
+   ) throws IOException
+   {
       //perform the default serialization for all non-transient, non-static fields
       aOutputStream.defaultWriteObject();
       ImageIO.write(imageSegment, "png", aOutputStream);
-    }
-    
-    public void extractFeatures()
+   }
+
+   public void extractFeatures()
    {
       int featureNum;
       BufferedImage segment = getImageSegment();
-      for(int x = 1; x < segment.getWidth() - 1; x++)
+      for (int x = 1; x < segment.getWidth() - 1; x++)
       {
-         for(int y = 1; y < segment.getHeight() - 1; y++)
+         for (int y = 1; y < segment.getHeight() - 1; y++)
          {
-            if(Deskewer.isDark(new Color(segment.getRGB(x, y))))
+            if (Deskewer.isDark(new Color(segment.getRGB(x, y))))
             {
                featureNum = 0;
                featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 1))) ? 1   : 0);
@@ -564,11 +590,101 @@ public class ProcessedCharacter implements Serializable
       }
 
       /* This is debug code. Uncomment this comment block to hide it.
-               System.out.println("Feature densities for: " + characterID + value);
+       System.out.println("Feature densities for: " + characterID + value);
 
-      for(int i = 0; i < 256; i++)
-         //System.out.format(null, args)
-         System.out.println("" + i + " : " + features[i]);
-      //*/
+       for(int i = 0; i < 256; i++)
+       //System.out.format(null, args)
+       System.out.println("" + i + " : " + features[i]);
+       //*/
+   }
+
+   
+      public void getIntersectionStrings()
+      {
+         getIntersectionStringH();
+         getIntersectionStringV();
+         
+         ///*
+         System.out.println("Character " + getID() + ":");
+         System.out.println(intersectionStringH);
+         System.out.println(intersectionStringV);
+         //*/
+      }
+
+   
+   public String getIntersectionStringH()
+   {
+      if (this.intersectionStringH == null)
+      {
+         BufferedImage image = getImageSegment();
+
+         int[] intersections;
+         int lastIntersection = 0;
+         intersections = new int[image.getHeight()];
+         String intersectionCount = "";
+         for (int y = 0; y < image.getHeight(); y++)
+         {
+            intersections[y] = 0;
+            for (int x = 0; x < image.getWidth(); x++)
+            {
+               //System.out.println("(" + x + "," + y + ") : " + image.getRGB(x, y));
+               if (Deskewer.isDark(new Color(image.getRGB(x, y))))
+               {
+                  while (x < image.getWidth()&& Deskewer.isDark(new Color(image.getRGB(x, y))))
+                  {
+                     x++;
+                  }
+                  intersections[y]++;
+                  //myPoints.add(new Point(x + 1, top, y));
+               }
+            }
+            if (intersections[y] != 0 && intersections[y] != lastIntersection)
+            {
+               intersectionCount += intersections[y];
+               lastIntersection = intersections[y];
+            }
+         }
+         intersectionStringH = intersectionCount;
+      }
+      return this.intersectionStringH;
+   }
+
+   
+   public String getIntersectionStringV()
+   {
+      if (this.intersectionStringV == null)
+      {
+         BufferedImage image = getImageSegment();
+
+         int[] intersections;
+         int lastIntersection = 0;
+         intersections = new int[image.getWidth()];
+         String intersectionCount = "";
+         for (int x = 0; x < image.getWidth(); x++)
+         {
+            intersections[x] = 0;
+            for (int y = 0; y < image.getHeight(); y++)
+            {
+               //System.out.println("(" + x + "," + y + ") : " + image.getRGB(x, y));
+               if (Deskewer.isDark(new Color(image.getRGB(x, y))))
+               {
+                  while (y < image.getHeight() && Deskewer.isDark(new Color(image.getRGB(x, y))))
+                  {
+                     y++;
+                  }
+                  intersections[x]++;
+                  //myPoints.add(new Point(x + 1, top, y));
+               }
+            }
+            if (intersections[x] != 0 && intersections[x] != lastIntersection)
+            {
+               intersectionCount += intersections[x];
+               lastIntersection = intersections[x];
+            }
+         }
+         intersectionStringV = intersectionCount;
+      }
+      return this.intersectionStringV;
    }
 }
+

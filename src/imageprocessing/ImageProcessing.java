@@ -55,7 +55,7 @@ public class ImageProcessing
       
       BufferedImage image = DesQ.getImage();
       
-      image = Despeckler.threshold(image, .5);
+      image = Despeckler.threshold(image, .55);
 
       Deskewer.writeImage("MyDespeckled.png", image);
       

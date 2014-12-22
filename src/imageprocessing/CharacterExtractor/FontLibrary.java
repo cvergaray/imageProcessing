@@ -77,6 +77,41 @@ public class FontLibrary implements Serializable
       //return hResult < vResult ? hResult : vResult;
    }
 
+   public ProcessedCharacter getIntersectionSuggestion(ProcessedCharacter input)
+   {
+      ProcessedCharacter lowestMatch = input;
+      int lowestFound = Integer.MAX_VALUE;
+      
+      if (characters != null)
+      {
+         for (List<ProcessedCharacter> currentLine : characters)
+         {
+            for (ProcessedCharacter current : currentLine)
+            {
+               int intersectConfidence = input.compareIntersectStrings(current);
+//               System.out.println("difference: " + histogramConfidence);
+               if (intersectConfidence < lowestFound)
+               {
+                  lowestFound = intersectConfidence;
+                  lowestMatch = current;
+                  if (intersectConfidence == 0)
+                  {
+                     break;
+                  }
+               }
+            }
+         }
+         
+         input.value = lowestMatch.value;
+         input.confidence = lowestFound / 1000.0;
+
+         System.out.println("Selected: " + input.value);
+
+      }
+      
+      return input;
+   }
+   
    public ProcessedCharacter findClosestMatch(ProcessedCharacter input)
    {
       ProcessedCharacter lowestHistMatch = input;
@@ -119,11 +154,11 @@ public class FontLibrary implements Serializable
          {
             input.confidence = (lowestHistFound + lowestFeatFound) / 2;
             input.value = lowestHistMatch.value;
-            System.out.println("Same! " + input.value);
+            //System.out.println("Same! " + input.value);
          }
          else
          {
-            ///*
+            /*
             System.out.println("They were different:");
             System.out.println(lowestHistMatch.value + " : " + lowestHistFound);
             System.out.println(lowestFeatMatch.value + " : " + lowestFeatFound);            
@@ -164,6 +199,7 @@ public class FontLibrary implements Serializable
       {
          for (ProcessedCharacter current : currentLine)
          {
+//            this.getIntersectionSuggestion(current);
             findClosestMatch(current);
             word += current.value;
             if (current.followedBySpace)
