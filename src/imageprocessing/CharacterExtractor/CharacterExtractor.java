@@ -186,6 +186,9 @@ public class CharacterExtractor
                //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && ((double) (temp - x) / (double) (x - left)) > .5);
                //characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > (.5 * currentLibrary.typicalAR));            
             }
+            
+            characters.get(characters.size() - 1).extractFeatures();
+            
             characterID++;
             //x--;
          }
@@ -342,7 +345,7 @@ public class CharacterExtractor
       return identifiedString;
    }
  
-   /*
+   
    public void extractFeatures(ProcessedCharacter input)
    {
       int featureNum;
@@ -354,18 +357,18 @@ public class CharacterExtractor
             if(Deskewer.isDark(new Color(segment.getRGB(x, y))))
             {
                featureNum = 0;
-               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 1))) ? 0x1   : 0);
-               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x    , y - 1))) ? 0x2   : 0);
-               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y - 1))) ? 0x4   : 0);
-               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 0))) ? 0x8   : 0);
-               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y - 0))) ? 0x16  : 0);
-               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y + 1))) ? 0x32  : 0);
-               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x    , y + 1))) ? 0x64  : 0);
-               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y + 1))) ? 0x128 : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 1))) ? 1   : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x    , y - 1))) ? 2   : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y - 1))) ? 4   : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 0))) ? 8   : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y - 0))) ? 16  : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y + 1))) ? 32  : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x    , y + 1))) ? 64  : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y + 1))) ? 128 : 0);
                input.features[featureNum]++;
             }
          }
-      }
+      }      
    }
-   */
+   
 }

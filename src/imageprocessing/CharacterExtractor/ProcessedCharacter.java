@@ -5,6 +5,8 @@
  */
 package imageprocessing.CharacterExtractor;
 
+import imageprocessing.deskew.Deskewer;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,7 +32,7 @@ public class ProcessedCharacter implements Serializable
    private int[] hHistogram;
    private int[] vHistogram;
    public Boolean followedBySpace;
-//   public int[] features;
+   public int[] features;
 
    /**
     * Complete Constructor. Accepts and assigns all values within the object.
@@ -53,7 +55,7 @@ public class ProcessedCharacter implements Serializable
       lineNumber = lineNum;
       value = pValue;
       confidence = 0;
-//      features = new int[256];
+      features = new int[256];
 
       /*
        * Since we know what the character is, we might as well calculate all the
@@ -83,7 +85,7 @@ public class ProcessedCharacter implements Serializable
       characterID = id;
       lineNumber = lineNum;
       confidence = Double.MAX_VALUE;
-//      features = new int[256];
+      features = new int[256];
 
    }
 
@@ -312,6 +314,57 @@ public class ProcessedCharacter implements Serializable
       return differenceFactor;
    }
    
+      /**
+    * CompareFeatures.
+    * This works by comparing the features array of two characters. In this case,
+    * there are always 256 items in both arrays, so the checks for size used in
+    * the other compare functions are not necessary. Instead we can directly
+    * compare the two arrays.
+    * The reason there are 256 items is because we can treat all pixels 
+    * surrounding a dark pixel as binary digits of which the value is determined
+    * by the darkness of the pixel. Therefore, there are 2^8 = 256 possibilities
+    * and they can be indexed by setting the corresponding bits and using the 
+    * resultant number as an index into the array.
+    * The bits are assigned starting at the LSB from the top left pixel and
+    * moving the same way we read in English, skipping the middle pixel.
+    * Thus, the (decimal) numbers used as masks for each pixel are represented 
+    * in the following grid:
+    * [001 : 002 : 004]
+    * [008 : 000 : 016]
+    * [032 : 064 : 128]
+    * 
+    * @param input a ProcessedCharacter that is to be compared.
+    * @return
+    */
+   double compareFeatures(ProcessedCharacter input)
+   {
+      if(input.features == null || features == null)
+         return Double.MAX_VALUE;
+      
+      //This will keep track of how different the images are.
+      double differenceFactor = 0;
+            
+       /*
+       The differences are calculated and tallied in the differenceFactor 
+       variable.
+       The calculations are made by subtracting one projection from the other 
+       and adding the absolute value of the difference. This will allow 
+       commutativity between characters when comparing.
+       */
+      for (int i = 0; i < 256; i++)
+      {
+         differenceFactor += Math.abs(input.features[i] - features[i]);
+      }
+      
+//      countValue = countValue > 0 ? countValue : 1;
+      
+      //The difference factor is the average of how many features are different 
+      differenceFactor = differenceFactor / 256;
+
+      return differenceFactor;   
+   }
+
+   
    /**
     * CompareHistogram
     *
@@ -485,4 +538,37 @@ public class ProcessedCharacter implements Serializable
       aOutputStream.defaultWriteObject();
       ImageIO.write(imageSegment, "png", aOutputStream);
     }
+    
+    public void extractFeatures()
+   {
+      int featureNum;
+      BufferedImage segment = getImageSegment();
+      for(int x = 1; x < segment.getWidth() - 1; x++)
+      {
+         for(int y = 1; y < segment.getHeight() - 1; y++)
+         {
+            if(Deskewer.isDark(new Color(segment.getRGB(x, y))))
+            {
+               featureNum = 0;
+               featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 1))) ? 1   : 0);
+               featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x    , y - 1))) ? 2   : 0);
+               featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y - 1))) ? 4   : 0);
+               featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 0))) ? 8   : 0);
+               featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y - 0))) ? 16  : 0);
+               featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y + 1))) ? 32  : 0);
+               featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x    , y + 1))) ? 64  : 0);
+               featureNum |= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y + 1))) ? 128 : 0);
+               features[featureNum]++;
+            }
+         }
+      }
+
+      /* This is debug code. Uncomment this comment block to hide it.
+               System.out.println("Feature densities for: " + characterID + value);
+
+      for(int i = 0; i < 256; i++)
+         //System.out.format(null, args)
+         System.out.println("" + i + " : " + features[i]);
+      //*/
+   }
 }

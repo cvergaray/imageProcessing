@@ -22,7 +22,7 @@ public class FontLibrary implements Serializable
    private final String fontName;
    private int countCharacters;
    public double typicalAR;
-   
+
    static final long serialVersionUID = -687991492150864067L;
 
    public FontLibrary(List<List<ProcessedCharacter>> pCharacters,
@@ -65,23 +65,24 @@ public class FontLibrary implements Serializable
    }
 
    public double compareHistograms(ProcessedCharacter input, ProcessedCharacter compared)
-  {
+   {
       //Double hResult =  input.compareHistogram(compared);
       //Double zResult =  input.compareZonedHistogram(compared, 6);//input.getVHistogram().length);
       //return hResult < zResult ? hResult : zResult;
-       
+
       return input.compareHistograms(compared);
-      
+
       //Double hResult =  input.compareHHistogram(compared);
       //Double vResult =  input.compareVHistogram(compared);
       //return hResult < vResult ? hResult : vResult;
-      
    }
 
    public ProcessedCharacter findClosestMatch(ProcessedCharacter input)
    {
-      ProcessedCharacter lowestMatch = input;
-      double lowestFound = input.confidence;
+      ProcessedCharacter lowestHistMatch = input;
+      ProcessedCharacter lowestFeatMatch = input;
+      double lowestHistFound = input.confidence;
+      double lowestFeatFound = input.confidence;
 
       if (characters != null)
       {
@@ -90,18 +91,65 @@ public class FontLibrary implements Serializable
             for (ProcessedCharacter current : currentLine)
             {
                double histogramConfidence = compareHistograms(input, current);
+               double featureConfidence = input.compareFeatures(current);
 //               System.out.println("difference: " + histogramConfidence);
-               if (histogramConfidence < lowestFound)
+               if (histogramConfidence < lowestHistFound)
                {
-                  lowestFound = histogramConfidence;
-                  lowestMatch = current;
-                  if(lowestFound == 0) break;
+                  lowestHistFound = histogramConfidence;
+                  lowestHistMatch = current;
+                  if (lowestHistFound == 0)
+                  {
+                     break;
+                  }
+               }
+               
+               if (featureConfidence < lowestFeatFound)
+               {
+                  lowestFeatFound = featureConfidence;
+                  lowestFeatMatch = current;
+                  if (lowestFeatFound == 0)
+                  {
+                     break;
+                  }
                }
             }
          }
-         System.out.println("Selected: " + lowestMatch.value);
-         input.confidence = lowestFound;
-         input.value = lowestMatch.value;
+         
+         if(lowestHistMatch.equals(lowestFeatMatch))
+         {
+            input.confidence = (lowestHistFound + lowestFeatFound) / 2;
+            input.value = lowestHistMatch.value;
+            System.out.println("Same! " + input.value);
+         }
+         else
+         {
+            ///*
+            System.out.println("They were different:");
+            System.out.println(lowestHistMatch.value + " : " + lowestHistFound);
+            System.out.println(lowestFeatMatch.value + " : " + lowestFeatFound);            
+            //*/
+            
+            
+            ProcessedCharacter lowerChar;
+            double lowerConf;
+            if(lowestHistFound < lowestFeatFound)
+            {
+               lowerChar = lowestHistMatch;
+               lowerConf = lowestHistFound;
+            }
+            else
+            {
+                lowerChar = lowestFeatMatch;
+               lowerConf = lowestFeatFound;
+            }
+            
+            input.value = lowerChar.value;
+            input.confidence = lowerConf;
+            
+         }
+         
+         System.out.println("Selected: " + input.value);
+         
       }
 
       return input;
@@ -122,7 +170,7 @@ public class FontLibrary implements Serializable
             {
 //               List<com.swabunga.spell.engine.Word> suggestion = SpellCheckerManager.getSuggestions(word, 3);
 //               if(suggestion != null && !suggestion.isEmpty())
- //                 word = suggestion.get(0).toString();
+               //                 word = suggestion.get(0).toString();
                processed += word;
                processed += " ";
                word = "";
@@ -156,7 +204,7 @@ public class FontLibrary implements Serializable
       }
       return true;
    }
-   
+
    public static FontLibrary LoadLibrary(String libName)
    {
       FontLibrary loadedLibrary = null;
@@ -173,7 +221,7 @@ public class FontLibrary implements Serializable
          loadedLibrary = (FontLibrary) load.readObject();
 
          load.close(); // This also closes loadFile.
-         
+
          System.err.println("Loaded Font library " + loadedLibrary.fontName);
 
       } catch (Exception e)
@@ -184,6 +232,5 @@ public class FontLibrary implements Serializable
       }
       return loadedLibrary;
    }
-   
-   
+
 }
