@@ -159,7 +159,7 @@ public class CharacterExtractor
             if (x != left)
             {
                int charWidth = (x - left);
-               if (charWidth > 13)
+               if (charWidth > 16)
                {
                   charWidth = charWidth / 2;
                   characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
@@ -342,4 +342,30 @@ public class CharacterExtractor
       return identifiedString;
    }
  
+   /*
+   public void extractFeatures(ProcessedCharacter input)
+   {
+      int featureNum;
+      BufferedImage segment = input.getImageSegment();
+      for(int x = 1; x < segment.getWidth(); x++)
+      {
+         for(int y = 1; y < segment.getHeight(); y++)
+         {
+            if(Deskewer.isDark(new Color(segment.getRGB(x, y))))
+            {
+               featureNum = 0;
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 1))) ? 0x1   : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x    , y - 1))) ? 0x2   : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y - 1))) ? 0x4   : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y - 0))) ? 0x8   : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y - 0))) ? 0x16  : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x - 1, y + 1))) ? 0x32  : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x    , y + 1))) ? 0x64  : 0);
+               featureNum &= (Deskewer.isDark(new Color(segment.getRGB(x + 1, y + 1))) ? 0x128 : 0);
+               input.features[featureNum]++;
+            }
+         }
+      }
+   }
+   */
 }

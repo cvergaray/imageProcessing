@@ -30,6 +30,7 @@ public class ProcessedCharacter implements Serializable
    private int[] hHistogram;
    private int[] vHistogram;
    public Boolean followedBySpace;
+//   public int[] features;
 
    /**
     * Complete Constructor. Accepts and assigns all values within the object.
@@ -52,6 +53,7 @@ public class ProcessedCharacter implements Serializable
       lineNumber = lineNum;
       value = pValue;
       confidence = 0;
+//      features = new int[256];
 
       /*
        * Since we know what the character is, we might as well calculate all the
@@ -81,6 +83,8 @@ public class ProcessedCharacter implements Serializable
       characterID = id;
       lineNumber = lineNum;
       confidence = Double.MAX_VALUE;
+//      features = new int[256];
+
    }
 
    /**
@@ -98,6 +102,7 @@ public class ProcessedCharacter implements Serializable
       characterID = id;
       lineNumber = -1;
       confidence = Double.MAX_VALUE;
+//      features = new int[256];
 
    }
 

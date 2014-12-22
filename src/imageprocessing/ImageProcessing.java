@@ -77,24 +77,23 @@ public class ImageProcessing
 
       image = Despeckler.threshold(image, .5);
 
-/*      
-      List<List<ProcessedCharacter>> lines = CharacterExtractor.extractAll(image);      
+      CharacterExtractor.learnFont("COURIER.ttf", "Monospace");
+      
+      
+      /*
+      List<List<ProcessedCharacter>> lines = CharacterExtractor.currentLibrary.characters;    
 
-      Deskewer temp;
+//      Deskewer temp;
       
       for (List<ProcessedCharacter> currentLine : lines)
       {
          for (ProcessedCharacter current : currentLine)
          {
-            temp = new Deskewer(current.getImageSegment());
-            temp.setThreshold(2);
-            angle = temp.GetHoughAngle();
-            Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() + "-" + angle + ".png", current.getImageSegment());
+            Deskewer.writeImage("Libraries/learned/LC" + "-" + current.getID() + ".png", current.getImageSegment());
          }
       }
-*/
-      CharacterExtractor.learnFont("COURIER.ttf", "Monospace");
 
+*/
 //      CharacterExtractor.learnFont("Times New Roman.ttf", "I Pretend");
 
       String interpreted = CharacterExtractor.identifyCharacters(image);
