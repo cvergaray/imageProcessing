@@ -44,13 +44,13 @@ public class Test extends JPanel
        frame.setVisible(true);
        */
 
-      Deskewer DesQ = new Deskewer("Read Folded Pages g.png");
+      Deskewer DesQ = new Deskewer("gjvg.png");
 
       BufferedImage image = DesQ.getImage();
 
       image = Despeckler.threshold(image, .5);
 
-      Deskewer.writeImage("ReadBW.png", image);
+      Deskewer.writeImage("MononiBW.png", image);
 
       DesQ.initWithImage(image);
 
@@ -117,12 +117,12 @@ class Point
 
    public void setStart(int startPixel)
    {
-      start = (float) startPixel / 10;
+      start = (float) startPixel / 100;
    }
 
    public void setEnd(int endPixel)
    {
-      end = (float) endPixel / 10;
+      end = (float) endPixel / 100;
    }
 
    public int getPageNum()

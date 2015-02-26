@@ -519,7 +519,7 @@ public class ProcessedCharacter implements Serializable
          if (this.getHHistogram()[nTop] == 0)
          {
             nTop++;
-         } else
+         } else 
          {
             notDone = false;
          }
@@ -604,11 +604,11 @@ public class ProcessedCharacter implements Serializable
          getIntersectionStringH();
          getIntersectionStringV();
          
-         ///*
+         /*
          System.out.println("Character " + getID() + ":");
          System.out.println(intersectionStringH);
          System.out.println(intersectionStringV);
-         //*/
+         */
       }
 
    

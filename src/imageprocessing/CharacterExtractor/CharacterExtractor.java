@@ -98,6 +98,11 @@ public class CharacterExtractor
             //y--;
          }
       }
+      
+      for( ProcessedCharacter line : lines){
+      Deskewer.writeImage("output/line-" + line.getID() + ".png", line.getImageSegment());
+      }
+      
       return lines;
    }
 
@@ -335,13 +340,13 @@ public class CharacterExtractor
          {
             confidence += current.confidence;
             count++;
-            System.out.println(current.value + " : " + current.confidence);
+            //System.out.println(current.value + " : " + current.confidence);
             Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() /*+ "-" + current.getAspectRatio() */ + ".png", current.getImageSegment());
 
          }
       }
       int roundedConfidence = (int) ((1.0 - (confidence / count)) * 10000);
-      System.out.println("Total confidence : " + (double) roundedConfidence / 100 + "%");
+      //System.out.println("Total confidence : " + (double) roundedConfidence / 100 + "%");
       return identifiedString;
    }
 

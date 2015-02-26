@@ -105,7 +105,7 @@ public class FontLibrary implements Serializable
          input.value = lowestMatch.value;
          input.confidence = lowestFound / 1000.0;
 
-         System.out.println("Selected: " + input.value);
+         //System.out.println("Selected: " + input.value);
 
       }
       
@@ -137,7 +137,7 @@ public class FontLibrary implements Serializable
                      break;
                   }
                }
-               
+               /*
                if (featureConfidence < lowestFeatFound)
                {
                   lowestFeatFound = featureConfidence;
@@ -147,10 +147,11 @@ public class FontLibrary implements Serializable
                      break;
                   }
                }
+               */
             }
          }
          
-         if(lowestHistMatch.equals(lowestFeatMatch))
+/*         if(lowestHistMatch.equals(lowestFeatMatch))
          {
             input.confidence = (lowestHistFound + lowestFeatFound) / 2;
             input.value = lowestHistMatch.value;
@@ -164,7 +165,7 @@ public class FontLibrary implements Serializable
             System.out.println(lowestFeatMatch.value + " : " + lowestFeatFound);            
             //*/
             
-            
+/*            
             ProcessedCharacter lowerChar;
             double lowerConf;
             if(lowestHistFound < lowestFeatFound)
@@ -182,6 +183,10 @@ public class FontLibrary implements Serializable
             input.confidence = lowerConf;
             
          }
+*/
+         
+         input.value = lowestHistMatch.value;
+         input.confidence = lowestHistMatch.confidence;
          
          System.out.println("Selected: " + input.value);
          
@@ -204,9 +209,9 @@ public class FontLibrary implements Serializable
             word += current.value;
             if (current.followedBySpace)
             {
-//               List<com.swabunga.spell.engine.Word> suggestion = SpellCheckerManager.getSuggestions(word, 3);
+//               List<com.swabunga.spell.engine.Word> suggestion = SpellCheckerManager.getSuggestions(word, 1);
 //               if(suggestion != null && !suggestion.isEmpty())
-               //                 word = suggestion.get(0).toString();
+//               word = suggestion.get(0).toString();
                processed += word;
                processed += " ";
                word = "";

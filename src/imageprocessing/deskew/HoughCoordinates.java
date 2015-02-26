@@ -61,7 +61,7 @@ public class HoughCoordinates
       return mAngle;
    }
 
-   public double getAR()
+   public int getAR()
    {
       return mAngleRef;
    }

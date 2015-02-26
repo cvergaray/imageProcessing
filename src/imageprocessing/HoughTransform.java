@@ -52,7 +52,8 @@ public class HoughTransform extends Thread {
         //String filename = "skewedImages/bcnotdetected.jpg"; 
         //String filename = "skewedImages/p16.jpg"; 
         //String filename = "skewedImages/image138.jpg"; 
-        String filename = "skewedImages/Courier Sample A.png"; 
+        //String filename = "skewedImages/Courier Sample A.png"; 
+        String filename = "skewedImages/Courier Sample D.png"; 
  
         // load the file using Java's imageIO library 
         BufferedImage image = javax.imageio.ImageIO.read(new File(filename)); 

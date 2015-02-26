@@ -11,9 +11,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.util.Pair;
 import javax.imageio.ImageIO;
 
 /**
@@ -172,7 +175,7 @@ public class Deskewer
                Color c2 = new Color(image.getRGB(x, y + 1));
                Color c3 = new Color(image.getRGB(x, y - 1));
 
-               if (isDark(c1) && (!isDark(c2)/* ^ !isDark(c3)*/))
+               if (isDark(c1) && (!isDark(c2) ^ !isDark(c3)))
                {
                   //System.out.println("Pixel (" + x + "," + y + ") is dark.");
                   for (int t = 0; t < m_CountSteps; t++)
@@ -202,24 +205,33 @@ public class Deskewer
 
          int count = 0;
          double skewAngle = 0.0;
+         HashMap<Double,Integer> angleVotes = new HashMap<Double,Integer>();          
 
          while (count == 0 && threshold > 0)
-         {
+         {            
             skewAngle = 0.0;
             count = 0;
             for (HoughCoordinates current : top20)
             {
                if (current.votes > 0 && current.votes > threshold)
-               {
+               {  
+                  /* //This doesn't work because a single erroneous point would throw the whole thing off
                   System.err.println("Adding " + current.getAngle() + " with " + current.votes + " votes to running total");
                   skewAngle += current.getAngle();
+                  */
                   count++;
 //                  current.draw(image, Color.CYAN.getRGB());
+                  
+                  if(angleVotes.containsKey(current.getAngle()))
+                     angleVotes.put(current.getAngle(), 
+                             (int) angleVotes.get(current.getAngle()) + 1);
+                  else
+                     angleVotes.put(current.getAngle(), 1);
                }
             }
             if (count == 0)
             {
-               threshold = threshold - 1;
+               threshold = threshold - 70;
             }
             
          }
@@ -230,8 +242,17 @@ public class Deskewer
 
          if (count > 0)
          {
+            Map.Entry<Double, Integer> highestVotedAngle = null;
+            for(Map.Entry<Double, Integer> entry : angleVotes.entrySet()) {
+               if(highestVotedAngle == null || entry.getValue() > highestVotedAngle.getValue())
+                  highestVotedAngle = entry;
+            }
             System.out.println("Angle == " + skewAngle / (double) count);
-            return ((skewAngle) / (double) count) - (.5 * Math.PI);
+            System.out.println("Higest voted angle = " +
+                    highestVotedAngle.getKey() + " With " + 
+                    highestVotedAngle.getValue() + " votes.");
+//            return ((skewAngle) / (double) count) - (.5 * Math.PI);
+            return (highestVotedAngle.getKey() - (.5 * Math.PI));
          }
 
       } catch (Exception e)
