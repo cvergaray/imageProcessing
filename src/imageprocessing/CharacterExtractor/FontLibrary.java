@@ -5,7 +5,7 @@
  */
 package imageprocessing.CharacterExtractor;
 
-import imageprocessing.SpellCheckerManager;
+//import imageprocessing.SpellCheckerManager;
 import java.io.*;
 import java.util.List;
 
@@ -22,6 +22,7 @@ public class FontLibrary implements Serializable
    private final String fontName;
    private int countCharacters;
    public double typicalAR;
+   public double typicalWidth;
 
    static final long serialVersionUID = -687991492150864067L;
 

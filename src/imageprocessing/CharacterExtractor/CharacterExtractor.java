@@ -6,6 +6,7 @@
 package imageprocessing.CharacterExtractor;
 
 import imageprocessing.deskew.Deskewer;
+import imageprocessing.rotate.ImageRotator;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -16,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * CharacterExtractor. A class dedicated to processing images and finding
@@ -131,12 +133,17 @@ public class CharacterExtractor
       int left = 0;
       for (int x = 0; x < image.getWidth(); x++)
       {
+         //if this column actually has dark pixels in it, it is of interest
          if (projections[x] > 0)
          {
+            //Keep track of where we started, so we know how far we have gone.
             left = x;
+            //While there are still pixels to look at
             while (x < image.getWidth() && x < projections.length && projections[x] > 0)
             {
                //Double twoPixel = 2.0 / (double) image.getHeight();
+               //If there aren't many set pixels, indicating that we are close 
+               //to the end of a letter
                if (projections[x] <= 3 && x > 1 && x < image.getWidth() - 1)
                {
                   Boolean combinedRight = false;
@@ -146,6 +153,8 @@ public class CharacterExtractor
                   {
                      if (image.getRGB(x, i) == Color.BLACK.getRGB())
                      {
+                        //The previous pixel is combined with the next one if it is 
+                        //directly connected on either side.
                         combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i - 1);
                         combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i);
                         combinedRight |= image.getRGB(x, i) == image.getRGB(x + 1, i + 1);
@@ -161,17 +170,27 @@ public class CharacterExtractor
                }
                x++;
             }
+            //Provided we have actually gone forward
             if (x != left)
-            {
+            {               
                int charWidth = (x - left);
-               if (charWidth > 16)
+               if (charWidth > 16) //If the width is larger than 16, it's more than one character
                {
-                  charWidth = charWidth / 2;
-                  characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
-                  characters.get(characters.size() - 1).followedBySpace = true;
-                  characterID++;
-                  left += charWidth;
-                  characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
+                  int [] borders = getVertMinima(image.getSubimage(left, 0, charWidth, image.getHeight()), 2);
+                  //int estimatedNumCharacters = borders.length; //(int) Math.round((float) charWidth / 13.0);//(float) currentLibrary.typicalWidth);
+                  //charWidth = charWidth / estimatedNumCharacters;
+                  //for(int i = 0; i < estimatedNumCharacters; i++)
+                  int oldWidth = 0; //The "widths" are actually indexes
+                  for (int width : borders)
+                  { 
+                     width -= oldWidth; //adjust the index so it's actually a width
+                     oldWidth += width; //Adjust the old width to include the width of this character
+                     characters.add(new ProcessedCharacter(image.getSubimage(left, 0, width, image.getHeight()), characterID, lineID));
+                     characters.get(characters.size() - 1).followedBySpace = false;//true;
+                     characterID++;
+                     left += width;
+                  }
+//                  characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
                } else
                {
                   characters.add(new ProcessedCharacter(image.getSubimage(left, 0, charWidth, image.getHeight()), characterID, lineID));
@@ -200,14 +219,74 @@ public class CharacterExtractor
       }
       return characters;
    }
+ 
+/**
+ * Find a list of local isMinima based on the vertical projections.
+ * 
+ * @param pImage The image to be analyzed
+ * @param threshold The minimum number of pixels required to count as a isMinima
+ * @return An array of the indexes of the minimum values.
+ */   
+   public static int[] getVertMinima(BufferedImage pImage, int threshold){
 
+      int[] verticalProjections = getVerticalProjections(pImage);
+      boolean[] isMinima;
+      isMinima = new boolean[pImage.getWidth()];
+      Arrays.fill(isMinima, false);
+      for (int i = 6; i < verticalProjections.length - 1; i++)
+      {
+         //A sector is a isMinima if it's value is lower than both of it's neighbors 
+         //and is less than or equal to the specified threshold
+         if (verticalProjections[i] <= threshold
+                 && verticalProjections[i - 1] >= verticalProjections[i]
+                 && verticalProjections[i + 1] >= verticalProjections[i])
+         {
+            isMinima[i] = true;
+         }
+      }
+      
+      //I don't care about the beginning of the segment
+      isMinima[0] = false;
+      //But, the end better be a local minimum
+      isMinima[isMinima.length - 1] = true;
+      
+      
+      //some normalization. I don't want multiple minima next to eachother
+      for(int i = 6; i < verticalProjections.length - 1; i++){
+         //If there are three in a row, take the middle one
+ //        if(isMinima[i - 1] == isMinima[i] == isMinima[i + 1] == true)
+ //           isMinima[i - 1] = isMinima[i + 1] = false;
+         
+         //If just two in a row, take the latter
+         if(isMinima[i - 1] && isMinima[i]) isMinima[i - 1] = false;
+      }
+      
+      
+      int count = 0;
+            for(int i = 0; i < isMinima.length; i++)
+               if(isMinima[i]){
+                  count++;
+                  i += 5;
+               }
+      
+      int index = 0;
+      int [] minima = new int[count];      
+      for(int i = 0; i < isMinima.length; i++)
+         if(isMinima[i]){
+            minima[index++] = i;
+            i += 5; //We can't have two minima within 6 spaces of eachother
+         }
+      
+      return minima;
+   }
+   
    public static ProcessedCharacter getSpacing(ProcessedCharacter charToProcess, BufferedImage image, int x, int[] projections)
    {
       int temp = x + 1;
       for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
 
-      Deskewer.writeImage("test-" + charToProcess.getID() + ".png", charToProcess.getImageSegment());
-      charToProcess.setFollowedBySpace((temp - x) > 8);
+      Deskewer.writeImage("output/test-" + charToProcess.getID() + ".png", charToProcess.getImageSegment());
+      charToProcess.setFollowedBySpace((temp - x) > 15);
       /*
        if(currentLibrary == null)
        characters.get(characters.size() - 1).followedBySpace = (temp - x < x - left && (double) (temp - x) / (double) (x - left) > .6);
@@ -222,7 +301,7 @@ public class CharacterExtractor
       return getCharacters(getLines(image));
    }
 
-   public static void learnFont(String FileName, String FontName)
+   public static void learnFont(String FileName, String FontName, double angle)
    {
       Font font = null;// = Font.getFont("Times New Roman");
 
@@ -246,11 +325,11 @@ public class CharacterExtractor
          return;
       }
 
-      currentLibrary = FontLibrary.LoadLibrary(font.getName());
+      currentLibrary = FontLibrary.LoadLibrary(font.getName() + "-" + angle);
 
       if (currentLibrary != null)
       {
-         System.err.println("FontLibrary Loaded from file: " + font.getName());
+         System.err.println("FontLibrary Loaded from file: " + font.getName() + "-" + angle);
          return;
       }
 
@@ -277,12 +356,22 @@ public class CharacterExtractor
 
       g.drawString(test, 50, 50);
       //g.drawString(test2, 50, 150);
+      
+      //Here, we rotate the image by the given angle and then rotate it back.
+      //This will reproduce any artifacts of rotation in the library font,
+      //hopefully improving accuracy
+      if(angle != 0.0)
+      {
+         bufferedImage = ImageRotator.rotateRad(bufferedImage, angle);
+         bufferedImage = ImageRotator.rotateRad(bufferedImage, -angle);
+      }
 
       List<List<ProcessedCharacter>> all = extractAll(bufferedImage);
 
-      currentLibrary = new FontLibrary(all, font.getFontName());
+      currentLibrary = new FontLibrary(all, font.getFontName() + "-" + angle);
       int i = 33;
       double averageAR = 0;
+      double averageWidth = 0;
       for (List<ProcessedCharacter> currentLine : all)
       {
          for (ProcessedCharacter current : currentLine)
@@ -304,12 +393,14 @@ public class CharacterExtractor
             i++;
 
             averageAR += current.getAspectRatio();
-
+            //The length of the vertical histogram is the width of the image
+            averageWidth += current.getVHistogram().length;
          }
       }
 
       currentLibrary.typicalAR = averageAR / (double) (i - 34);
-
+      currentLibrary.typicalWidth = averageWidth / (double) (i - 34);
+      
       FontLibrary.SaveLibrary(currentLibrary);
 
       //Deskewer.writeImage("LearnedFont.png", bufferedImage);

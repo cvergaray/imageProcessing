@@ -13,8 +13,13 @@ import imageprocessing.rotate.ImageRotator;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -48,8 +53,22 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample D.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample E.png");
 
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-1.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-2.png");
+   // static String imageName = "Talk A-1.png";
+   // static String imageName = "Talk A-2.png";
+   // static String imageName = "Talk A-3.png";
+   // static String imageName = "Talk A-4.png";
+   // static String imageName = "Talk A-5.png";
+   // static String imageName = "Talk A-6.png";
+   // static String imageName = "Talk A-7.png";
+   // static String imageName = "Talk A-8.png";
+   // static String imageName = "Talk A-9.png";
+   // static String imageName = "Talk A-10.png";
+   // static String imageName = "Talk A-11.png";
+   // static String imageName = "Talk A-12.png";
+   // static String imageName = "alphabet.png";
+    static String imageName = "alphabet2.png";
+
+// static Deskewer DesQ = new Deskewer("skewedImages/Talk A-2.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-3.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-4.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-5.png");
@@ -57,20 +76,24 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-7.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-8.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-9.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-10.png");
+   // static String imageName = "skewedImages/Talk A-10.png";
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-11.png");
-    static Deskewer DesQ = new Deskewer("skewedImages/Talk A-12.png");
+   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-12.png");
 
+    static String imageFolder = "skewedImages/";
+    static String textFolder = "expectedText/";
+    
     /**
     * @param args the command line arguments
     */
    public static void main(String[] args)
    {
       
+      Deskewer DesQ = new Deskewer(imageFolder + imageName);
       
       BufferedImage image = DesQ.getImage();
       
-      image = Despeckler.threshold(image, .55);
+      image = Despeckler.threshold(image, .65);
 
       Deskewer.writeImage("MyDespeckled.png", image);
       
@@ -92,7 +115,7 @@ public class ImageProcessing
 
       image = Despeckler.threshold(image, .5);
 
-      CharacterExtractor.learnFont("COURIER.ttf", "Monospace");
+      CharacterExtractor.learnFont("COURIER.ttf", "Monospace", angle);
       //CharacterExtractor.learnFont("OCRA.ttf", "Monospace");
       
       
@@ -124,8 +147,17 @@ public class ImageProcessing
 
       int correct = 0;
       //expected = "This is a section of sample text. Please detect it, \nalgorithm. I need you to work.";
-      
       expected = ""; 
+       try
+       {
+          Scanner in = new Scanner(new FileReader(textFolder + imageName + ".txt"));
+          while(in.hasNextLine())
+             expected += in.nextLine() + "\n";
+       } catch (FileNotFoundException ex)
+       {
+          Logger.getLogger(ImageProcessing.class.getName()).log(Level.SEVERE, null, ex);
+       }
+      
               /*"I served in the United States Navy toward the end of World War II. I was a seaman, the \nlowest possible rank in the navy. Then I qualified to be Seaman First Class, after which \nI qualified to be Yeoman Third Class. \n" +
 "World War II ended, and I was later discharged. But I made a decision that if ever I \nwent back into the military, I wanted to serve as a commissioned officer. I thought, “No \nmore mess kitchens for me, no more scrubbing the decks, if I can avoid it.”\n" +
 "After I was discharged, I joined the United States Naval Reserve. I went to drill every \nMonday night. I studied hard that I might qualify academically. I took every kind of \nexamination imaginable: mental, physical, and emotional. Finally, there came the beautiful news: “You have been accepted to receive the commission of an ensign in the United States Naval Reserve.”\n" +
@@ -137,8 +169,9 @@ public class ImageProcessing
       int length = interpreted.length() < expected.length() ? interpreted.length() : expected.length();
       for(int i = 0; i < length; i++)
       {
-         System.out.println(expected.charAt(i) + " == " + interpreted.charAt(i) + " ? " + 
-                 ((expected.charAt(i) == interpreted.charAt(i)) ? "TRUE" : "FALSE"));
+         String debugString = "" + expected.charAt(i) + " == " + interpreted.charAt(i) + " ? " + 
+                 ((expected.charAt(i) == interpreted.charAt(i)) ? "TRUE" : "FALSE");
+         System.out.println(unEscapeString(debugString));
          correct += (expected.charAt(i) == interpreted.charAt(i)) ? 1 : 0;
       }
       
@@ -148,4 +181,17 @@ public class ImageProcessing
 //      CharacterExtractor.learnFont("Pretendo.ttf", "I Pretend");
    }
 
+   //As found on StackOverflow:
+   //http://stackoverflow.com/questions/7888004/how-do-i-print-escape-characters-in-java
+   public static String unEscapeString(String s){
+    StringBuilder sb = new StringBuilder();
+    for (int i=0; i<s.length(); i++)
+        switch (s.charAt(i)){
+            case '\n': sb.append("\\n"); break;
+            case '\t': sb.append("\\t"); break;
+            // ... rest of escape characters
+            default: sb.append(s.charAt(i));
+        }
+    return sb.toString();
+}
 }
