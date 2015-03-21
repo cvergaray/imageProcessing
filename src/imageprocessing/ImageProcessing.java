@@ -53,7 +53,7 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample D.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample E.png");
 
-   // static String imageName = "Talk A-1.png";
+    static String imageName = "Talk A-1.png";
    // static String imageName = "Talk A-2.png";
    // static String imageName = "Talk A-3.png";
    // static String imageName = "Talk A-4.png";
@@ -66,8 +66,10 @@ public class ImageProcessing
    // static String imageName = "Talk A-11.png";
    // static String imageName = "Talk A-12.png";
    // static String imageName = "alphabet.png";
-    static String imageName = "alphabet2.png";
+   // static String imageName = "alphabet2.png";
+   // static String imageName = "0123456789.png";
 
+    
 // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-2.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-3.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-4.png");

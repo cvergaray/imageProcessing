@@ -180,6 +180,20 @@ public class ProcessedCharacter implements Serializable
               / (double) imageSegment.getWidth();
    }
 
+   public double getPixelDensity()
+   {
+      double darkPixels = 0;
+      int[] hist = this.getHHistogram();
+      
+      //Only one direction need be counted, since they should be exactly the same.
+      for (int current : hist)
+      {
+         darkPixels += current;
+      }
+      
+      //Pixel density is the number of dark pixels multiplied by the nubmer of total pixels (length * width)
+      return darkPixels / (double) (this.imageSegment.getHeight() * this.imageSegment.getWidth());
+   }
    /**
     * Calculate Histograms. Calculates the vertical and horizontal projections
     * (Histograms) by calling the static method of the character extractor. This

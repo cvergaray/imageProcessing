@@ -7,6 +7,7 @@ package imageprocessing.CharacterExtractor;
 
 //import imageprocessing.SpellCheckerManager;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -152,6 +153,39 @@ public class FontLibrary implements Serializable
             }
          }
          
+         ProcessedCharacter differentiated;
+         switch (lowestHistMatch.value)
+         {
+            case 'q':
+               differentiated = differentiateChars("gpq", input);
+               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+               break;
+            case 'k':
+               differentiated = differentiateChars("hk", input);
+               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+               break;
+            case 'u':
+               differentiated = differentiateChars("un", input);
+               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+               break;
+            case 'a':
+            case 's':
+            case 'e':
+               differentiated = differentiateChars("ase", input);
+               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+               break;
+            case 'n':
+               differentiated = differentiateChars("wn", input);
+               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+               break;
+            case 'c':
+               differentiated = differentiateChars("oc", input);
+               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+               break;
+            default:
+               break;
+         }
+         
 /*         if(lowestHistMatch.equals(lowestFeatMatch))
          {
             input.confidence = (lowestHistFound + lowestFeatFound) / 2;
@@ -185,7 +219,6 @@ public class FontLibrary implements Serializable
             
          }
 */
-         
          input.value = lowestHistMatch.value;
          input.confidence = lowestHistMatch.confidence;
          
@@ -205,6 +238,8 @@ public class FontLibrary implements Serializable
       {
          for (ProcessedCharacter current : currentLine)
          {
+            if(current == null)
+               System.out.println("Something is very wrong!");
 //            this.getIntersectionSuggestion(current);
             findClosestMatch(current);
             word += current.value;
@@ -274,5 +309,149 @@ public class FontLibrary implements Serializable
       }
       return loadedLibrary;
    }
+   
+   private ProcessedCharacter differentiateChars(
+           String candidates, ProcessedCharacter testSubject){
+      return differentiateChars(getLibrarySubset(candidates), testSubject);
+   }
+   
+   private ProcessedCharacter differentiateChars(
+           List<ProcessedCharacter> candidates, ProcessedCharacter testSubject)
+   {
+      System.out.println("Looking for best match to H: " + 
+              testSubject.intersectionStringH + " V: " + 
+              testSubject.intersectionStringV);
+      
+      List<ProcessedCharacter> goodMatches = new ArrayList<ProcessedCharacter>();
 
+      int longestMatch = -1;
+      for (ProcessedCharacter current : candidates)
+      {
+         String lcs = LCS(current.getIntersectionStringH(), testSubject.getIntersectionStringV());
+         if(lcs.length() == longestMatch){
+            goodMatches.add(current);
+         } else if (lcs.length() > longestMatch) {
+            longestMatch = lcs.length();
+            goodMatches.clear();
+            goodMatches.add(current);
+         }
+      }
+
+      longestMatch = -1;
+      List<ProcessedCharacter> reallyGoodMatches = new ArrayList<ProcessedCharacter>();
+      for (ProcessedCharacter current : goodMatches) {
+         String lcs = LCS(current.intersectionStringV, testSubject.intersectionStringV);
+         if(lcs.length() == longestMatch){
+            reallyGoodMatches.add(current);
+         } else if (lcs.length() > longestMatch) {
+            longestMatch = lcs.length();
+            reallyGoodMatches.clear();
+            reallyGoodMatches.add(current);
+         } 
+      }
+      
+      ProcessedCharacter bestAvailableMatch = null;
+      if(!reallyGoodMatches.isEmpty())
+         if(reallyGoodMatches.size() == 1)
+            bestAvailableMatch = reallyGoodMatches.get(0);
+         else
+            bestAvailableMatch = breakTies(reallyGoodMatches, testSubject);
+      
+      for (ProcessedCharacter CurrentBestAvailableMatch : reallyGoodMatches)
+      System.out.println(
+              "Candidate match: " + CurrentBestAvailableMatch.value 
+              + " With H string: " + CurrentBestAvailableMatch.intersectionStringH
+                      + " and V String: " + CurrentBestAvailableMatch.intersectionStringV);
+      
+      
+      return bestAvailableMatch;
+   }
+   
+   public ProcessedCharacter breakTies(List<ProcessedCharacter> tied, ProcessedCharacter testSubject) {
+      System.out.println("Breaking a tie");
+      ProcessedCharacter winner = null;
+      double testSubjectDensity = testSubject.getPixelDensity();
+      double lowestDifference = Double.MAX_VALUE;
+      
+      System.out.println("Test subject Density: " + testSubjectDensity);
+      
+      for(ProcessedCharacter candidate : tied){
+         double candidateScore = Math.abs(testSubjectDensity - candidate.getPixelDensity());
+         System.out.println("Candidate Score: " + candidateScore);
+//int candidateScore = Math.abs(candidate.intersectionStringH.length() - testSubject.intersectionStringH.length());
+//candidateScore += Math.abs(candidate.intersectionStringV.length() - testSubject.intersectionStringV.length());
+         if(candidateScore > lowestDifference)
+         {
+            winner = candidate;
+            lowestDifference = candidateScore;
+         }
+      }
+
+      return winner;
+   }
+   
+
+ /*************************************************************************
+ *  Accepts two strings and computes their longest common subsequence.
+ * 
+ * Copyright © 2000–2011, Robert Sedgewick and Kevin Wayne. 
+ * Last updated: Wed Feb 9 09:20:16 EST 2011.
+ * 
+ * Adapted from: http://introcs.cs.princeton.edu/java/96optimization/LCS.java.html
+ *************************************************************************/
+   private String LCS(String x, String y)
+   {
+      String output = "";
+      int M = x.length();
+      int N = y.length();
+
+      // opt[i][j] = length of LCS of x[i..M] and y[j..N]
+      int[][] opt = new int[M + 1][N + 1];
+
+      // compute length of LCS and all subproblems via dynamic programming
+      for (int i = M - 1; i >= 0; i--)
+      {
+         for (int j = N - 1; j >= 0; j--)
+         {
+            if (x.charAt(i) == y.charAt(j))
+            {
+               opt[i][j] = opt[i + 1][j + 1] + 1;
+            } else
+            {
+               opt[i][j] = Math.max(opt[i + 1][j], opt[i][j + 1]);
+            }
+         }
+      }
+
+      // recover LCS itself and print it to standard output
+      int i = 0, j = 0;
+      while (i < M && j < N)
+      {
+         if (x.charAt(i) == y.charAt(j))
+         {
+            output += x.charAt(i);
+            i++;
+            j++;
+         } else if (opt[i + 1][j] >= opt[i][j + 1])
+         {
+            i++;
+         } else
+         {
+            j++;
+         }
+      }
+      return output;
+   }
+   
+   public List<ProcessedCharacter> getLibrarySubset(String desiredCharacters)
+   {
+      List<ProcessedCharacter> subset = new ArrayList<ProcessedCharacter>();
+
+      for (List<ProcessedCharacter> currentList : characters)
+         for (ProcessedCharacter current : currentList)
+            if (desiredCharacters.indexOf(current.value) != -1)            
+               subset.add(current);
+      return subset;
+   }
+   
 }

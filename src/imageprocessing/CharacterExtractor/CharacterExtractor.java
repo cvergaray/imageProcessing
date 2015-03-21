@@ -280,7 +280,8 @@ public class CharacterExtractor
       return minima;
    }
    
-   public static ProcessedCharacter getSpacing(ProcessedCharacter charToProcess, BufferedImage image, int x, int[] projections)
+   public static ProcessedCharacter getSpacing(ProcessedCharacter charToProcess, 
+           BufferedImage image, int x, int[] projections)
    {
       int temp = x + 1;
       for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
