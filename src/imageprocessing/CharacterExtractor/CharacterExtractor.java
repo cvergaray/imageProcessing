@@ -334,7 +334,7 @@ public class CharacterExtractor
          return;
       }
 
-      int x = 7000;
+      int x = 3500;
       int y = 200;
 
       BufferedImage bufferedImage = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
@@ -345,7 +345,7 @@ public class CharacterExtractor
       g.setColor(Color.BLACK);
       String test = new String();
       String test2 = new String();
-      for (int i = 33; i < 127; i++)
+      for (int i = 33; i < 123; i++)
       {
          if (i != 34)
          {
@@ -363,10 +363,12 @@ public class CharacterExtractor
       //hopefully improving accuracy
       if(angle != 0.0)
       {
-         bufferedImage = ImageRotator.rotateRad(bufferedImage, angle);
-         bufferedImage = ImageRotator.rotateRad(bufferedImage, -angle);
+//         bufferedImage = ImageRotator.rotateRad(bufferedImage, angle);
+//         bufferedImage = ImageRotator.rotateRad(bufferedImage, -angle);
       }
 
+      Deskewer.writeImage("DebugLearnedImage.png", bufferedImage);
+      
       List<List<ProcessedCharacter>> all = extractAll(bufferedImage);
 
       currentLibrary = new FontLibrary(all, font.getFontName() + "-" + angle);
@@ -382,13 +384,13 @@ public class CharacterExtractor
                i++;
             }
 
-            //System.out.println("AR for " + (char) i + ": " + current.getAspectRatio());
+            System.out.println("AR for " + (char) i + ": " + current.getAspectRatio());
             current = currentLibrary.findClosestMatch(current);
-            //System.out.println("Closest match for " + (char) i + " is: " + current.value + " With a confidence of: " + current.confidence);
-            /*
+            System.out.println("Closest match for " + (char) i + " is: " + current.value + " With a confidence of: " + current.confidence);
+            
              current.value = (char) i;
              current.calculateHistograms();
-             */
+             
 
 //             Deskewer.writeImage("output/character" /*+ current.getLineNum() */+ "-" + i + ".png", current.getImageSegment());
             i++;

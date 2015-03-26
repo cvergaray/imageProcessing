@@ -182,6 +182,13 @@ public class ProcessedCharacter implements Serializable
 
    public double getPixelDensity()
    {
+      int a, b, y, z;
+      for (a = 0; a < this.getHHistogram().length && this.getHHistogram()[a] == 0; a++);
+      for (y = 0; y < this.getVHistogram().length && this.getVHistogram()[y] == 0; y++);
+
+      for (b = this.getHHistogram().length - 1; b >= 0 && this.getHHistogram()[b] == 0; b--);
+      for (z = this.getVHistogram().length - 1; z >= 0 && this.getVHistogram()[z] == 0; z--);
+
       double darkPixels = 0;
       int[] hist = this.getHHistogram();
       
@@ -192,7 +199,7 @@ public class ProcessedCharacter implements Serializable
       }
       
       //Pixel density is the number of dark pixels multiplied by the nubmer of total pixels (length * width)
-      return darkPixels / (double) (this.imageSegment.getHeight() * this.imageSegment.getWidth());
+      return darkPixels / (double) ((b - a) * (z - y));
    }
    /**
     * Calculate Histograms. Calculates the vertical and horizontal projections
@@ -232,7 +239,6 @@ public class ProcessedCharacter implements Serializable
     */
    double compareHistograms(ProcessedCharacter input)
    {
-
       //First check the aspect ratios
       //If they are very different, one of the projections is probably limited
       //and histogram comparisons would probably be difficult.
@@ -626,6 +632,36 @@ public class ProcessedCharacter implements Serializable
       }
 
    
+      public String getFullIntersectionStringH()
+   {
+         BufferedImage image = getImageSegment();
+
+         int[] intersections;
+         intersections = new int[image.getHeight()];
+         String intersectionCount = "";
+         for (int y = 0; y < image.getHeight(); y++)
+         {
+            intersections[y] = 0;
+            for (int x = 0; x < image.getWidth(); x++)
+            {
+               //System.out.println("(" + x + "," + y + ") : " + image.getRGB(x, y));
+               if (Deskewer.isDark(new Color(image.getRGB(x, y))))
+               {
+                  while (x < image.getWidth()&& Deskewer.isDark(new Color(image.getRGB(x, y))))
+                  {
+                     x++;
+                  }
+                  intersections[y]++;
+                  //myPoints.add(new Point(x + 1, top, y));
+               }
+            }
+           //if(intersections[y] != 0)
+               intersectionCount += intersections[y];            
+         }
+         return intersectionCount;
+
+   }
+      
    public String getIntersectionStringH()
    {
       if (this.intersectionStringH == null)

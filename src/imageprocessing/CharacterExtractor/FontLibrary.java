@@ -153,38 +153,56 @@ public class FontLibrary implements Serializable
             }
          }
          
-         ProcessedCharacter differentiated;
+         ProcessedCharacter differentiated = null;
          switch (lowestHistMatch.value)
          {
             case 'q':
                differentiated = differentiateChars("gpq", input);
-               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
                break;
             case 'k':
                differentiated = differentiateChars("hk", input);
-               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
                break;
-            case 'u':
-               differentiated = differentiateChars("un", input);
-               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
-               break;
+            //case 'w':
+//            case 'n':
+//            case 'u':
+//               differentiated = differentiate_un(input);//differentiateChars("un", input);
+//               break;
             case 'a':
             case 's':
             case 'e':
-               differentiated = differentiateChars("ase", input);
-               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+            //case '&':
+            case '8':               
+            case '9':               
+            case 'B':               
+               differentiated = differentiate_ase8B9(input);//differentiateChars("ase8B9", input);
                break;
-            case 'n':
-               differentiated = differentiateChars("wn", input);
-               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
-               break;
+            case 'o':
             case 'c':
-               differentiated = differentiateChars("oc", input);
-               lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+            case 'u':
+            case 'n':
+               differentiated =  this.differentiate_ocun(input);//differentiateChars("oc", input);
+               break;
+/*            case 'r':
+            case 'x':
+               differentiated = differentiateChars("rx", input);
+            case ',':
+            case '.':
+               differentiated = differentiateChars(",.", input);
+               break;
+            case '/':
+            case '\\':
+            case '|':
+               differentiated = differentiateChars("\\|/ft", input);
+               break;*/
+            case 'l':
+            case 'i':
+               differentiated = differentiate_il(input);//differentiateChars("il", input);
                break;
             default:
                break;
          }
+         lowestHistMatch = differentiated == null ? lowestHistMatch : differentiated;
+
          
 /*         if(lowestHistMatch.equals(lowestFeatMatch))
          {
@@ -318,10 +336,10 @@ public class FontLibrary implements Serializable
    private ProcessedCharacter differentiateChars(
            List<ProcessedCharacter> candidates, ProcessedCharacter testSubject)
    {
-      System.out.println("Looking for best match to H: " + 
-              testSubject.intersectionStringH + " V: " + 
-              testSubject.intersectionStringV);
-      
+/*      System.out.println("Looking for best match to H: " + 
+              testSubject.getIntersectionStringH() + " V: " + 
+              testSubject.getIntersectionStringV());
+*/      
       List<ProcessedCharacter> goodMatches = new ArrayList<ProcessedCharacter>();
 
       int longestMatch = -1;
@@ -357,30 +375,31 @@ public class FontLibrary implements Serializable
          else
             bestAvailableMatch = breakTies(reallyGoodMatches, testSubject);
       
-      for (ProcessedCharacter CurrentBestAvailableMatch : reallyGoodMatches)
+/*      for (ProcessedCharacter CurrentBestAvailableMatch : reallyGoodMatches)
       System.out.println(
               "Candidate match: " + CurrentBestAvailableMatch.value 
               + " With H string: " + CurrentBestAvailableMatch.intersectionStringH
                       + " and V String: " + CurrentBestAvailableMatch.intersectionStringV);
-      
+ */     
       
       return bestAvailableMatch;
    }
    
-   public ProcessedCharacter breakTies(List<ProcessedCharacter> tied, ProcessedCharacter testSubject) {
+   public ProcessedCharacter groupByPixelDensity(List<ProcessedCharacter> tied, ProcessedCharacter testSubject) {
       System.out.println("Breaking a tie");
       ProcessedCharacter winner = null;
       double testSubjectDensity = testSubject.getPixelDensity();
       double lowestDifference = Double.MAX_VALUE;
       
-      System.out.println("Test subject Density: " + testSubjectDensity);
+      //System.out.println("Test subject Density: " + testSubjectDensity);
       
       for(ProcessedCharacter candidate : tied){
-         double candidateScore = Math.abs(testSubjectDensity - candidate.getPixelDensity());
-         System.out.println("Candidate Score: " + candidateScore);
+         double candidateDensity = candidate.getPixelDensity();
+         double candidateScore = Math.abs(testSubjectDensity - candidateDensity);
+         //System.out.println("Candidate '" + candidate.value + "' Score: " + candidateScore + " with density: " + candidateDensity);
 //int candidateScore = Math.abs(candidate.intersectionStringH.length() - testSubject.intersectionStringH.length());
 //candidateScore += Math.abs(candidate.intersectionStringV.length() - testSubject.intersectionStringV.length());
-         if(candidateScore > lowestDifference)
+         if(candidateScore < lowestDifference)
          {
             winner = candidate;
             lowestDifference = candidateScore;
@@ -390,7 +409,79 @@ public class FontLibrary implements Serializable
       return winner;
    }
    
+   
+      public ProcessedCharacter breakTies(List<ProcessedCharacter> tied, ProcessedCharacter testSubject) {
+         
+         //Somehow differentiate by "Open-ness"
+         //Which way is the character open?
+         return null;
+      }
+   
+      public ProcessedCharacter differentiate_un(ProcessedCharacter testSubject){
+         String intersect = testSubject.getFullIntersectionStringH();
+         //System.out.println("Full intersection String: " + intersect);
+         int index = intersect.indexOf('1');
 
+         String decision;
+         if(index > (intersect.length() / 2))
+            //The joined part is in the lower half of the image.
+            decision = "u";
+         else
+            decision = "n";
+         
+         return getLibrarySubset(decision).get(0);
+
+      }
+      
+      public ProcessedCharacter differentiate_il(ProcessedCharacter testSubject){
+         String decision;
+         if(isDotted(testSubject))
+            decision = "i";
+         else
+            decision = "l";
+         
+         return getLibrarySubset(decision).get(0);
+      }
+      
+      public boolean isDotted(ProcessedCharacter input){
+         String intersect = input.getFullIntersectionStringH();
+         //Any two non zero numbers with any number of zeros between them
+         //That means there are two parts to the character, separated by 
+         //blank space, eg a dotted i.
+         return intersect.matches("0*[1-9]+0+[1-9]+0*");
+      }
+      
+      public ProcessedCharacter differentiate_ocun(ProcessedCharacter testSubject){
+         String intersectionString = testSubject.getFullIntersectionStringH();
+         int midpoint = testSubject.getImageSegment().getWidth() / 2;
+         //If the first time there is only one intersection is in the top
+         //and the last time there is only one intersection is near the bottom
+         //It's either an o or a c
+         if(intersectionString.indexOf("1") < midpoint && intersectionString.lastIndexOf("1") > midpoint)
+            return differentiateChars("oc", testSubject);
+         //Otherwise there is only one intersection either on the top or 
+         //the bottom, making it a u or an n
+         else
+            return this.differentiate_un(testSubject);
+      }
+      
+      public ProcessedCharacter differentiate_ase8B9(ProcessedCharacter testSubject){
+         
+         displayRelevantDebugInfo("ase8B9");
+         
+         return differentiateChars("ase8B9", testSubject);         
+      }
+
+      public void displayRelevantDebugInfo(String characters){
+         List<ProcessedCharacter> desiredChars = getLibrarySubset(characters);
+         System.out.println("\tFull Horizontal Strings");
+         for(ProcessedCharacter current : desiredChars)
+            System.out.println(current.value + ": " + current.getFullIntersectionStringH());
+         System.out.println("\tFull Vertical Strings");
+
+      
+      }
+      
  /*************************************************************************
  *  Accepts two strings and computes their longest common subsequence.
  * 
@@ -449,8 +540,10 @@ public class FontLibrary implements Serializable
 
       for (List<ProcessedCharacter> currentList : characters)
          for (ProcessedCharacter current : currentList)
+            //If the character is found in the desired characters list, keep it
             if (desiredCharacters.indexOf(current.value) != -1)            
                subset.add(current);
+         
       return subset;
    }
    
