@@ -134,6 +134,7 @@ public class FontLibrary implements Serializable
                {
                   lowestHistFound = histogramConfidence;
                   lowestHistMatch = current;
+                  //If there is no difference, it's a perfect match.
                   if (lowestHistFound == 0)
                   {
                      break;
@@ -182,10 +183,14 @@ public class FontLibrary implements Serializable
             case 'n':
                differentiated =  this.differentiate_ocun(input);//differentiateChars("oc", input);
                break;
-/*            case 'r':
-            case 'x':
-               differentiated = differentiateChars("rx", input);
-            case ',':
+               
+               
+            case 'r':
+            case 'm':
+//            case 'x':
+               differentiated = differentiate_rm(input);
+               break;
+/*            case ',':
             case '.':
                differentiated = differentiateChars(",.", input);
                break;
@@ -240,7 +245,13 @@ public class FontLibrary implements Serializable
          input.value = lowestHistMatch.value;
          input.confidence = lowestHistMatch.confidence;
          
-         System.out.println("Selected: " + input.value);
+         //Special case. Since a comma is so small, the normal detection method
+         //is insufficiently robust. I need to find out where it is though, so 
+         //this can move there.
+         if(input.value == ',')
+            input.followedBySpace = true;
+         
+//         System.out.println("Selected: " + input.value);
          
       }
 
@@ -261,6 +272,8 @@ public class FontLibrary implements Serializable
 //            this.getIntersectionSuggestion(current);
             findClosestMatch(current);
             word += current.value;
+            if(word == "vel")
+               System.out.println("Another bug in the system, take a look!");
             if (current.followedBySpace)
             {
 //               List<com.swabunga.spell.engine.Word> suggestion = SpellCheckerManager.getSuggestions(word, 1);
@@ -386,7 +399,7 @@ public class FontLibrary implements Serializable
    }
    
    public ProcessedCharacter groupByPixelDensity(List<ProcessedCharacter> tied, ProcessedCharacter testSubject) {
-      System.out.println("Breaking a tie");
+//      System.out.println("Breaking a tie");
       ProcessedCharacter winner = null;
       double testSubjectDensity = testSubject.getPixelDensity();
       double lowestDifference = Double.MAX_VALUE;
@@ -453,7 +466,7 @@ public class FontLibrary implements Serializable
       
       public ProcessedCharacter differentiate_ocun(ProcessedCharacter testSubject){
          String intersectionString = testSubject.getFullIntersectionStringH();
-         int midpoint = testSubject.getImageSegment().getWidth() / 2;
+         int midpoint = testSubject.getImageSegment().getHeight() / 2;
          //If the first time there is only one intersection is in the top
          //and the last time there is only one intersection is near the bottom
          //It's either an o or a c
@@ -467,18 +480,37 @@ public class FontLibrary implements Serializable
       
       public ProcessedCharacter differentiate_ase8B9(ProcessedCharacter testSubject){
          
-         displayRelevantDebugInfo("ase8B9");
-         
-         return differentiateChars("ase8B9", testSubject);         
+         //displayRelevantDebugInfo("ase8B9");
+         String suggestion;
+         if(this.isTallCharacter(testSubject))
+            suggestion = "8B9";
+         else
+            suggestion = "ase";
+//         System.out.println("Differentiating using: " + suggestion);
+         return differentiateChars(suggestion, testSubject);         
       }
-
+      
+      public ProcessedCharacter differentiate_rm(ProcessedCharacter testSubject){
+         
+//         displayRelevantDebugInfo("rm");
+         String suggestion;
+         if(testSubject.getIntersectionStringH().contains("3"))
+            suggestion = "m";
+         else
+            suggestion = "r";
+         return getLibrarySubset(suggestion).get(0); 
+         
+      }
+      
+      
       public void displayRelevantDebugInfo(String characters){
          List<ProcessedCharacter> desiredChars = getLibrarySubset(characters);
          System.out.println("\tFull Horizontal Strings");
          for(ProcessedCharacter current : desiredChars)
             System.out.println(current.value + ": " + current.getFullIntersectionStringH());
          System.out.println("\tFull Vertical Strings");
-
+         for(ProcessedCharacter current : desiredChars)
+            System.out.println(current.value + ": " + current.getFullIntersectionStringV());
       
       }
       
@@ -532,6 +564,13 @@ public class FontLibrary implements Serializable
          }
       }
       return output;
+   }
+   
+   public boolean isTallCharacter(ProcessedCharacter testSubject)
+   {
+      String intersections = testSubject.getFullIntersectionStringH();
+      intersections = intersections.replace("0", "");
+      return intersections.length() > 12;      
    }
    
    public List<ProcessedCharacter> getLibrarySubset(String desiredCharacters)

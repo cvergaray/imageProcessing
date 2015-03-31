@@ -95,7 +95,12 @@ public class CharacterExtractor
             }
             ProcessedCharacter temp = new ProcessedCharacter(image.getSubimage(0, top, image.getWidth(), y - top), count);
             temp.trimImage();
-            lines.add(temp);
+            if(temp.getImageSegment().getHeight() < 30)
+               lines.add(temp);
+            else{
+               System.out.println("Line " + temp.getID() + " of invalid height - Assuming it's a picture and skipping");
+               Deskewer.writeImage("output/line-" + temp.getID() + ".png", temp.getImageSegment());
+            }
             count++;
             //y--;
          }
@@ -266,7 +271,7 @@ public class CharacterExtractor
             for(int i = 0; i < isMinima.length; i++)
                if(isMinima[i]){
                   count++;
-                  i += 5;
+                  i += 6;
                }
       
       int index = 0;
@@ -274,7 +279,7 @@ public class CharacterExtractor
       for(int i = 0; i < isMinima.length; i++)
          if(isMinima[i]){
             minima[index++] = i;
-            i += 5; //We can't have two minima within 6 spaces of eachother
+            i += 6; //We can't have two minima within 6 spaces of eachother
          }
       
       return minima;
@@ -384,9 +389,9 @@ public class CharacterExtractor
                i++;
             }
 
-            System.out.println("AR for " + (char) i + ": " + current.getAspectRatio());
+//            System.out.println("AR for " + (char) i + ": " + current.getAspectRatio());
             current = currentLibrary.findClosestMatch(current);
-            System.out.println("Closest match for " + (char) i + " is: " + current.value + " With a confidence of: " + current.confidence);
+//            System.out.println("Closest match for " + (char) i + " is: " + current.value + " With a confidence of: " + current.confidence);
             
              current.value = (char) i;
              current.calculateHistograms();
@@ -435,7 +440,7 @@ public class CharacterExtractor
             confidence += current.confidence;
             count++;
             //System.out.println(current.value + " : " + current.confidence);
-            Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() /*+ "-" + current.getAspectRatio() */ + ".png", current.getImageSegment());
+            //Deskewer.writeImage("output/character" + current.getLineNum() + "-" + current.getID() /*+ "-" + current.getAspectRatio() */ + ".png", current.getImageSegment());
 
          }
       }

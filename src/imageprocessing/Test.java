@@ -1,4 +1,5 @@
 
+import imageprocessing.Levenshtein;
 import imageprocessing.deskew.Deskewer;
 import imageprocessing.despeckle.Despeckler;
 import java.awt.Color;
@@ -34,6 +35,28 @@ public class Test extends JPanel
    }
 
    public static void main(String[] args)
+   {
+      String sample = "The quick bromn fox jumps over the lszy doq. The quich \n" +
+              "brown fox jumps over the lazy doq. \n";
+
+      String expected = "The quick brown fox jumps over the lazy dog. The quick \n" +
+              "brown fox jumps over the lazy dog. The quick brown fox \n";  
+      
+      int incorrect = Levenshtein.getLevenshteinDistance(sample, expected);
+      
+      System.out.println("A: " + sample);
+      System.out.println("B: " + expected);
+      System.out.println("LD: " + incorrect);
+      
+      int correct = expected.length() - incorrect;
+      correct = correct > 0 ? correct : 0;
+      System.out.println("Levenshtein Distance based accuracy estimate:");
+      System.out.println("Number of incorrect characters: " + incorrect);
+      System.out.println("Number of correct characters: " + correct + " / " + expected.length());
+      System.out.println("Percent correct: " + Math.round((double) correct / expected.length() * 100.0) + "%");
+   }
+   
+   public static void main2(String[] args)
    {
       /*
        JFrame frame = new JFrame();

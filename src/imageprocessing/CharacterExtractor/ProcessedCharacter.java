@@ -662,6 +662,7 @@ public class ProcessedCharacter implements Serializable
 
    }
       
+      
    public String getIntersectionStringH()
    {
       if (this.intersectionStringH == null)
@@ -700,7 +701,7 @@ public class ProcessedCharacter implements Serializable
    }
 
    
-   public String getIntersectionStringV()
+    public String getIntersectionStringV()
    {
       if (this.intersectionStringV == null)
       {
@@ -735,6 +736,38 @@ public class ProcessedCharacter implements Serializable
          intersectionStringV = intersectionCount;
       }
       return this.intersectionStringV;
+   }
+   
+   public String getFullIntersectionStringV()
+   {
+         BufferedImage image = getImageSegment();
+
+         int[] intersections;
+         intersections = new int[image.getWidth()];
+         String intersectionCount = "";
+         for (int x = 0; x < image.getWidth(); x++)
+         {
+            intersections[x] = 0;
+            for (int y = 0; y < image.getHeight(); y++)
+            {
+               //System.out.println("(" + x + "," + y + ") : " + image.getRGB(x, y));
+               if (Deskewer.isDark(new Color(image.getRGB(x, y))))
+               {
+                  while (y < image.getHeight() && Deskewer.isDark(new Color(image.getRGB(x, y))))
+                  {
+                     y++;
+                  }
+                  intersections[x]++;
+                  //myPoints.add(new Point(x + 1, top, y));
+               }
+            }
+//            if (intersections[x] != 0)
+//            {
+               intersectionCount += intersections[x];
+//            }
+         }
+         return intersectionCount;
+
    }
 }
 

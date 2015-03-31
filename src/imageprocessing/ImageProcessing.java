@@ -12,9 +12,12 @@ import imageprocessing.despeckle.Despeckler;
 import imageprocessing.rotate.ImageRotator;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
@@ -53,7 +56,7 @@ public class ImageProcessing
    // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample D.png");
    // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample E.png");
 
-   // static String imageName = "Talk A-1.png";
+    static String imageName = "Talk A-1.png";
    // static String imageName = "Talk A-2.png";
    // static String imageName = "Talk A-3.png";
    // static String imageName = "Talk A-4.png";
@@ -70,28 +73,80 @@ public class ImageProcessing
    // static String imageName = "0123456789.png";
 
    // static String imageName = "fox.png";
-    static String imageName = "lorem.png";
-
-    
-// static Deskewer DesQ = new Deskewer("skewedImages/Talk A-2.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-3.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-4.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-5.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-6.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-7.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-8.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-9.png");
-   // static String imageName = "skewedImages/Talk A-10.png";
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-11.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Talk A-12.png");
+   // static String imageName = "lorem.png";  //Perfect conditions
+   // static String imageName = "lorem2.png"; //Rotated, no picture
+   // static String imageName = "lorem3.png"; //No rotation, with picture
+   // static String imageName = "lorem4.png"; //Rotation and picture
 
     static String imageFolder = "skewedImages/";
     static String textFolder = "expectedText/";
+
+    
+   public static void main(String[] args)
+   {      
+      String [] testFiles = {"fox.png", "lorem.png", "lorem4.png"};
+      
+      for(String current : testFiles){
+      String interpreted = analyzeImage(imageFolder + current);
+      String expected = readTextFromFile(textFolder + current + ".txt");
+      compareResults(expected, interpreted);         
+      }
+   }
+   
+   public static String readTextFromFile(String fileName){
+      String expected = "";
+      try
+       {
+          Scanner in = new Scanner(new FileReader(fileName));
+          while(in.hasNextLine())
+             expected += in.nextLine() + "\n";
+       } catch (FileNotFoundException ex)
+       {
+          Logger.getLogger(ImageProcessing.class.getName()).log(Level.SEVERE, null, ex);
+       }
+      return expected;
+   }
+   
+   public static void compareResults(String expected, String interpreted){
+
+      int correct = 0;             
+      int incorrect = Levenshtein.getLevenshteinDistance(interpreted, expected);
+
+      System.out.println(interpreted);
+
+      correct = expected.length() - incorrect;
+      correct = correct > 0 ? correct : 0;
+      System.out.println("Levenshtein Distance based accuracy estimate:");
+      System.out.println("Number of incorrect characters: " + incorrect);
+      System.out.println("Number of correct characters: " + correct + " / " + expected.length());
+      System.out.println("Percent correct: " + Math.round((double) correct / expected.length() * 100.0) + "%");
+      for(int i = 0; i < 60; i++) System.out.print('=');
+      for(int i = 0; i < 3 ; i++) System.out.print('\n');
+   }
+
+   public static String analyzeImage(String fileName)
+   {
+      
+      Deskewer DesQ = new Deskewer(fileName);
+      
+      BufferedImage image = DesQ.getImage();
+      image = Despeckler.threshold(image, .65);
+      
+      DesQ.initWithImage(image);
+      Double angle = -300.0;
+      angle = DesQ.GetHoughAngle();
+      angle = angle == -300.0 ? 0.0 : angle;
+      image = ImageRotator.rotateRad(image, -angle);
+      image = Despeckler.threshold(image, .5);
+      CharacterExtractor.learnFont("COURIER.ttf", "Monospace", angle);
+
+      return CharacterExtractor.identifyCharacters(image);
+   }
     
     /**
     * @param args the command line arguments
     */
-   public static void main(String[] args)
+   public static void main2(String[] args)
    {
       
       Deskewer DesQ = new Deskewer(imageFolder + imageName);
@@ -141,15 +196,33 @@ public class ImageProcessing
 //      CharacterExtractor.learnFont("Times New Roman.ttf", "I Pretend");
 
       String interpreted = CharacterExtractor.identifyCharacters(image);
+BufferedWriter writer = null;
+      try
+       {
+          writer = new BufferedWriter(new FileWriter("OCR_Results.txt", true));
+          writer.write(interpreted);
+       } catch (IOException ex)
+       {
+          System.out.println("Write error: " + ex.getMessage());
+          //Logger.getLogger(ImageProcessing.class.getName()).log(Level.SEVERE, null, ex);
+       }finally{
+         try
+         {
+            writer.close();
+         } catch (IOException ex)
+         {
+            System.out.println("File Close error: " + ex.getMessage());
+         }
+      }
+
       
-      System.out.println(interpreted);
       String expected = "!";
-      for(int i = 35; i < 127; i++)
+/*      for(int i = 35; i < 127; i++)
       {
          expected += (char) i;
       }
       System.out.println(expected);
-
+*/
       int correct = 0;
       //expected = "This is a section of sample text. Please detect it, \nalgorithm. I need you to work.";
       expected = ""; 
@@ -173,6 +246,7 @@ public class ImageProcessing
          System.out.println(unEscapeString(debugString));
          correct += (expected.charAt(e) == interpreted.charAt(i)) ? 1 : 0;
  
+
          //Reset at each line, so if one reached the EOL first, then wait for the other to catch up.
          //If they are the same, both can move ahead.
          if (!((expected.charAt(e) == '\n') ^ (interpreted.charAt(i) == '\n'))) {
@@ -186,9 +260,23 @@ public class ImageProcessing
          }         
       }
       
+      
+      int incorrect = Levenshtein.getLevenshteinDistance(interpreted, expected);
+
+      System.out.println(interpreted);
+
+//      System.out.println("Number of correct characters: " + correct + " / " + length);
+//      System.out.println("Percent correct: " + Math.round((double) correct / length * 100.0) + "%");
+//      System.out.println("Number of incorrect characters: " + (length - correct));
+
+      correct = length - incorrect;
+      correct = correct > 0 ? correct : 0;
+      System.out.println("Levenshtein Distance based accuracy estimate:");
+      System.out.println("Number of incorrect characters: " + incorrect);
       System.out.println("Number of correct characters: " + correct + " / " + length);
       System.out.println("Percent correct: " + Math.round((double) correct / length * 100.0) + "%");
-              
+      System.out.println("Percent correct: " + Math.round((double) correct / expected.length() * 100.0) + "%");
+      
 //      CharacterExtractor.learnFont("Pretendo.ttf", "I Pretend");
    }
 
