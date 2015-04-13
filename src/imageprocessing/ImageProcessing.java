@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
@@ -36,61 +37,59 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class ImageProcessing
 {
-   // SimpleFileChooser fileChooser = new SimpleFileChooser();
 
-   // static Deskewer DesQ = new Deskewer("skewedImages/bcnotdetected.jpg");
-   // static Deskewer DesQ = new Deskewer("skewedImages/p16.jpg");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Sample25Degrees.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Sample355Degrees.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/zjd2b.jpg");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Image_003.jpg");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Image_005.jpg");
-   // static Deskewer DesQ = new Deskewer("skewedImages/text4991.jpg"); //This one is still unhappy
-   // static Deskewer DesQ = new Deskewer("skewedImages/skew.jpg");
-   // static Deskewer DesQ = new Deskewer("skewedImages/pg38-39.gif"); //The black border causes problems
-   // static Deskewer DesQ = new Deskewer("ar3.jpg"); //Not text, but edge detected anyway
-   // static Deskewer DesQ = new Deskewer("learnedFont.png"); //Baseline super accurately detected. :D
-   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample A.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample B.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample C.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample D.png");
-   // static Deskewer DesQ = new Deskewer("skewedImages/Courier Sample E.png");
+   static String imageName = "TheLetterOCRSource 1.png";
+   //static String imageName = "alphabet2.png";
+   // static String imageFolder = "skewedImages/";
 
-    static String imageName = "Talk A-1.png";
-   // static String imageName = "Talk A-2.png";
-   // static String imageName = "Talk A-3.png";
-   // static String imageName = "Talk A-4.png";
-   // static String imageName = "Talk A-5.png";
-   // static String imageName = "Talk A-6.png";
-   // static String imageName = "Talk A-7.png";
-   // static String imageName = "Talk A-8.png";
-   // static String imageName = "Talk A-9.png";
-   // static String imageName = "Talk A-10.png";
-   // static String imageName = "Talk A-11.png";
-   // static String imageName = "Talk A-12.png";
-   // static String imageName = "alphabet.png";
-   // static String imageName = "alphabet2.png";
-   // static String imageName = "0123456789.png";
-
-   // static String imageName = "fox.png";
-   // static String imageName = "lorem.png";  //Perfect conditions
-   // static String imageName = "lorem2.png"; //Rotated, no picture
-   // static String imageName = "lorem3.png"; //No rotation, with picture
-   // static String imageName = "lorem4.png"; //Rotation and picture
-
-    static String imageFolder = "skewedImages/";
+   
+    static String imageFolder = "test/";
     static String textFolder = "expectedText/";
 
     
    public static void main(String[] args)
    {      
-      String [] testFiles = {"fox.png", "lorem.png", "lorem4.png"};
+      Stopwatch stopwatch = new Stopwatch();
+      ArrayList<String> files = getFileNamesFromFolder(imageFolder);
       
-      for(String current : testFiles){
-      String interpreted = analyzeImage(imageFolder + current);
-      String expected = readTextFromFile(textFolder + current + ".txt");
-      compareResults(expected, interpreted);         
+      System.out.println("Files in Picture Directory:");
+      for(String current : files)
+         System.out.println(current);
+      
+      displayBorder();
+      
+      long runningTotalPercentCorrect = 0;
+      
+      for(String current : files){
+         System.out.println("Now testing file: " + current);
+         stopwatch.start();
+         String interpreted = analyzeImage(imageFolder + current);
+         stopwatch.stop();
+         String expected = readTextFromFile(textFolder + current + ".txt");
+         runningTotalPercentCorrect += compareResults(expected, interpreted, true);
+         System.out.println("Elapsed Test Execution Time: " + stopwatch.getTotalTimeString());
+         displayBorder();
       }
+      System.out.println("Total   Execution Time:  " + stopwatch.getTotalTimeString(1));
+      System.out.println("Average process Time:    " + stopwatch.getTotalTimeString(2));
+      System.out.println("Average percent correct: " + runningTotalPercentCorrect / files.size() + '%');
+
+   }
+   
+   public static ArrayList<String> getFileNamesFromFolder(String folderName){
+      ArrayList<String> results = new ArrayList<String>();
+
+      File[] files = new File(folderName).listFiles();
+      //If this pathname does not denote a directory, then listFiles() returns null. 
+
+      for (File file : files)
+      {
+         if (file.isFile() && file.getName().contains(".png"))
+         {
+            results.add(file.getName());
+         }
+      }
+      return results;
    }
    
    public static String readTextFromFile(String fileName){
@@ -107,19 +106,28 @@ public class ImageProcessing
       return expected;
    }
    
-   public static void compareResults(String expected, String interpreted){
+   public static long compareResults(String expected, String interpreted){
+      return compareResults(expected, interpreted, false);
+   }
+   
+   public static long compareResults(String expected, String interpreted, Boolean verbose){
 
       int correct = 0;             
       int incorrect = Levenshtein.getLevenshteinDistance(interpreted, expected);
 
-      System.out.println(interpreted);
+      if(verbose) System.out.println(interpreted);
 
       correct = expected.length() - incorrect;
       correct = correct > 0 ? correct : 0;
+      long percentCorrect = Math.round((double) correct / expected.length() * 100.0);
       System.out.println("Levenshtein Distance based accuracy estimate:");
       System.out.println("Number of incorrect characters: " + incorrect);
       System.out.println("Number of correct characters: " + correct + " / " + expected.length());
-      System.out.println("Percent correct: " + Math.round((double) correct / expected.length() * 100.0) + "%");
+      System.out.println("Percent correct: " + percentCorrect + "%");
+      return percentCorrect;
+   }
+   
+   public static void displayBorder(){
       for(int i = 0; i < 60; i++) System.out.print('=');
       for(int i = 0; i < 3 ; i++) System.out.print('\n');
    }

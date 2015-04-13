@@ -6,7 +6,6 @@
 package imageprocessing.CharacterExtractor;
 
 import imageprocessing.deskew.Deskewer;
-import imageprocessing.rotate.ImageRotator;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -319,7 +318,7 @@ public class CharacterExtractor
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             font = Font.createFont(Font.TRUETYPE_FONT, new File(FileName)).deriveFont(24F);
             ge.registerFont(font);
-            System.out.println("Loaded font " + font.getName() + "From TTF");
+//            System.out.println("Loaded font " + font.getName() + "From TTF");
          } catch (FontFormatException | IOException e)
          {
             e.printStackTrace();
@@ -412,7 +411,7 @@ public class CharacterExtractor
       FontLibrary.SaveLibrary(currentLibrary);
 
       //Deskewer.writeImage("LearnedFont.png", bufferedImage);
-      System.err.println("FontLibrary Generated from TTF: " + currentLibrary.name());
+//      System.err.println("FontLibrary Generated from TTF: " + currentLibrary.name());
 
    }
 
