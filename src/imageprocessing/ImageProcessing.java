@@ -7,10 +7,8 @@ package imageprocessing;
 
 import imageprocessing.CharacterExtractor.*;
 import imageprocessing.deskew.Deskewer;
-import static imageprocessing.deskew.Deskewer.writeImage;
 import imageprocessing.despeckle.Despeckler;
 import imageprocessing.rotate.ImageRotator;
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,16 +17,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 
 
 /**
@@ -38,8 +29,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class ImageProcessing
 {
 
-   static String imageName = "TheLetterOCRSource 1.png";
-   //static String imageName = "alphabet2.png";
+   //static String imageName = "TheLetterOCRSource 1.png";
+   static String imageName = "lorem2.png";
    // static String imageFolder = "skewedImages/";
 
    
@@ -47,7 +38,7 @@ public class ImageProcessing
     static String textFolder = "expectedText/";
 
     
-   public static void main(String[] args)
+   public static void main2(String[] args)
    {      
       Stopwatch stopwatch = new Stopwatch();
       ArrayList<String> files = getFileNamesFromFolder(imageFolder);
@@ -154,7 +145,7 @@ public class ImageProcessing
     /**
     * @param args the command line arguments
     */
-   public static void main2(String[] args)
+   public static void main(String[] args)
    {
       
       Deskewer DesQ = new Deskewer(imageFolder + imageName);
