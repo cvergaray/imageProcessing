@@ -38,7 +38,7 @@ public class ImageProcessing
     static String textFolder = "expectedText/";
 
     
-   public static void main2(String[] args)
+   public static void main(String[] args)
    {      
       Stopwatch stopwatch = new Stopwatch();
       ArrayList<String> files = getFileNamesFromFolder(imageFolder);
@@ -56,6 +56,7 @@ public class ImageProcessing
          stopwatch.start();
          String interpreted = analyzeImage(imageFolder + current);
          stopwatch.stop();
+         printTextToFile("output/" + current + ".interpreted.txt", interpreted);
          String expected = readTextFromFile(textFolder + current + ".txt");
          runningTotalPercentCorrect += compareResults(expected, interpreted, true);
          System.out.println("Elapsed Test Execution Time: " + stopwatch.getTotalTimeString());
@@ -95,6 +96,18 @@ public class ImageProcessing
           Logger.getLogger(ImageProcessing.class.getName()).log(Level.SEVERE, null, ex);
        }
       return expected;
+   }
+   
+   public static void printTextToFile(String fileName, String output){
+      try
+       {
+          BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+          out.write(output);
+          out.close();
+       } catch (Exception ex)
+       {
+          Logger.getLogger(ImageProcessing.class.getName()).log(Level.SEVERE, null, ex);
+       }
    }
    
    public static long compareResults(String expected, String interpreted){
@@ -137,7 +150,7 @@ public class ImageProcessing
       angle = angle == -300.0 ? 0.0 : angle;
       image = ImageRotator.rotateRad(image, -angle);
       image = Despeckler.threshold(image, .5);
-      CharacterExtractor.learnFont("COURIER.ttf", "Monospace", angle);
+      CharacterExtractor.learnFont("COURIER.TTF", "Monospace", angle);
 
       return CharacterExtractor.identifyCharacters(image);
    }
@@ -145,7 +158,7 @@ public class ImageProcessing
     /**
     * @param args the command line arguments
     */
-   public static void main(String[] args)
+   public static void main2(String[] args)
    {
       
       Deskewer DesQ = new Deskewer(imageFolder + imageName);

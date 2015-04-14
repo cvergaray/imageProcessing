@@ -98,7 +98,7 @@ public class CharacterExtractor
                lines.add(temp);
             else{
                System.out.println("Line " + temp.getID() + " of invalid height - Assuming it's a picture and skipping");
-               Deskewer.writeImage("output/line-" + temp.getID() + ".png", temp.getImageSegment());
+               //Deskewer.writeImage("output/line-" + temp.getID() + ".png", temp.getImageSegment());
             }
             count++;
             //y--;
@@ -106,7 +106,7 @@ public class CharacterExtractor
       }
       
       for( ProcessedCharacter line : lines){
-      Deskewer.writeImage("output/line-" + line.getID() + ".png", line.getImageSegment());
+      //Deskewer.writeImage("output/line-" + line.getID() + ".png", line.getImageSegment());
       }
       
       return lines;
@@ -290,7 +290,7 @@ public class CharacterExtractor
       int temp = x + 1;
       for (; temp < image.getWidth() /*&& temp - x < x - left */ && projections[temp] == 0; temp++);
 
-      Deskewer.writeImage("output/test-" + charToProcess.getID() + ".png", charToProcess.getImageSegment());
+      //Deskewer.writeImage("output/test-" + charToProcess.getID() + ".png", charToProcess.getImageSegment());
       charToProcess.setFollowedBySpace((temp - x) > 15);
       /*
        if(currentLibrary == null)
@@ -371,7 +371,7 @@ public class CharacterExtractor
 //         bufferedImage = ImageRotator.rotateRad(bufferedImage, -angle);
       }
 
-      Deskewer.writeImage("DebugLearnedImage.png", bufferedImage);
+      //Deskewer.writeImage("DebugLearnedImage.png", bufferedImage);
       
       List<List<ProcessedCharacter>> all = extractAll(bufferedImage);
 
